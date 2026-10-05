@@ -60,14 +60,15 @@ crystallizedMoundQuakeFloor :: Logic
 crystallizedMoundQuakeFloor = quake
 
 -- settings
-preciseMovement, difficultSkips, obscureSkips, shriekPogoSkips :: Logic
+preciseMovement, difficultSkips, obscureSkips, shriekPogoSkips, slopeBallSkips :: Logic
 preciseMovement = Setting "PRECISEMOVEMENT"
 difficultSkips = Setting "DIFFICULTSKIPS"
 obscureSkips = Setting "OBSCURESKIPS"
 shriekPogoSkips = Setting "SHRIEKPOGOSKIPS"
+slopeBallSkips = Setting "SLOPEBALLSKIPS"
 
 
--- state variables
+-- spellcasting state variables
 
 data NearbySoul = None | ItemSoul | MapAreaSoul | AreaSoul | RoomSoul
 castSpell :: [Int] -> NearbySoul -> NearbySoul -> Logic
@@ -90,3 +91,7 @@ shriekPogo' casts canLeftStall canRightStall before after = do
     let castSpellNormal = castSpell casts before after
 
     shriekPogoSkips .& scream .& wings .& difficultSkipsifNeeded .& (castSpellNormal .| castSpellStalled)
+
+slopeball :: [Int] -> NearbySoul -> NearbySoul -> Logic
+slopeball casts before after =
+    slopeBallSkips .& fireball .& castSpell casts before after
