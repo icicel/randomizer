@@ -1,6 +1,6 @@
 module Main(main) where
 
-import DataTest
+import HK.World
 
 main :: IO ()
 main = do
