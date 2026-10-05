@@ -71,16 +71,22 @@ shriekPogoSkips = Setting "SHRIEKPOGOSKIPS"
 
 data NearbySoul = None | ItemSoul | MapAreaSoul | AreaSoul | RoomSoul
 castSpell :: [Int] -> NearbySoul -> NearbySoul -> Logic
-castSpell casts before after = Always -- todo
+-- castSpell casts before after
+castSpell _ _ _ = Always -- todo
 
 shriekPogo :: [Int] -> Logic
-shriekPogo casts = shriekPogo' casts False False None None
+shriekPogo casts = shriekPogo' casts True True None None
 
 shriekPogo' :: [Int] -> Bool -> Bool -> NearbySoul -> NearbySoul -> Logic
-shriekPogo' casts noLeftStall noRightStall before after = do
-    let stallingNeeded = (length casts > 1) && (not noLeftStall || not noRightStall)
-    let leftDashifNeeded = if (stallingNeeded && not noLeftStall) then leftDash else Always
-    let rightDashifNeeded = if (stallingNeeded && not noRightStall) then rightDash else Always
-    let difficultSkipsNeeded = (sum casts >= 4)
-    let difficultSkipsifNeeded = if difficultSkipsNeeded then difficultSkips else Always
-    shriekPogoSkips .& scream .& wings .& difficultSkipsifNeeded
+shriekPogo' casts canLeftStall canRightStall before after = do
+    let castCount = sum casts
+    -- this is a difficult skip if there are 4 or more casts
+    let difficultSkipsifNeeded = if (castCount >= 4) then difficultSkips else Always
+    -- stalling splits the casts but requires the ability to dash
+    let leftDashifPossible = if canLeftStall then leftDash else Never
+    let rightDashifPossible = if canRightStall then rightDash else Never
+    let stalledCasts = replicate castCount 1
+    let castSpellStalled = castSpell stalledCasts before after .& (leftDashifPossible .| rightDashifPossible)
+    let castSpellNormal = castSpell casts before after
+
+    shriekPogoSkips .& scream .& wings .& difficultSkipsifNeeded .& (castSpellNormal .| castSpellStalled)
