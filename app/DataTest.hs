@@ -15,7 +15,7 @@ descendingDark = Location "Descending_Dark" $
          .| obscureSkips .& difficultSkips
         )
      .| wings .& obscureSkips
-     .| shriekPogo [2]
+     .| shriekPogo (options { casts = [2] })
     )
 
 -- "name": "Grub-Crystallized_Mound",
@@ -70,28 +70,42 @@ slopeBallSkips = Setting "SLOPEBALLSKIPS"
 
 -- spellcasting state variables
 
+data Spellcast = Spellcast {
+    casts :: [Int],
+    canLeftStall :: Bool,
+    canRightStall :: Bool,
+    before :: NearbySoul,
+    after :: NearbySoul
+}
+
 data NearbySoul = None | ItemSoul | MapAreaSoul | AreaSoul | RoomSoul
-castSpell :: [Int] -> NearbySoul -> NearbySoul -> Logic
--- castSpell casts before after
-castSpell _ _ _ = Always -- todo
 
-shriekPogo :: [Int] -> Logic
-shriekPogo casts = shriekPogo' casts True True None None
+-- default state
+options :: Spellcast
+options = Spellcast {
+    casts = [1],
+    canLeftStall = True,
+    canRightStall = True,
+    before = None,
+    after = None
+}
 
-shriekPogo' :: [Int] -> Bool -> Bool -> NearbySoul -> NearbySoul -> Logic
-shriekPogo' casts canLeftStall canRightStall before after = do
-    let castCount = sum casts
+-- TODO: nonterminal logic
+castSpell :: Spellcast -> Logic
+castSpell _ = Always
+
+shriekPogo :: Spellcast -> Logic
+shriekPogo spellcast = do
+    let castCount = sum (casts spellcast)
     -- this is a difficult skip if there are 4 or more casts
     let difficultSkipsifNeeded = if (castCount >= 4) then difficultSkips else Always
     -- stalling splits the casts but requires the ability to dash
-    let leftDashifPossible = if canLeftStall then leftDash else Never
-    let rightDashifPossible = if canRightStall then rightDash else Never
-    let stalledCasts = replicate castCount 1
-    let castSpellStalled = castSpell stalledCasts before after .& (leftDashifPossible .| rightDashifPossible)
-    let castSpellNormal = castSpell casts before after
-
+    let leftDashifPossible = if (canLeftStall spellcast) then leftDash else Never
+    let rightDashifPossible = if (canRightStall spellcast) then rightDash else Never
+    let stalledSpellcast = spellcast { casts = replicate castCount 1 }
+    let castSpellStalled = castSpell stalledSpellcast .& (leftDashifPossible .| rightDashifPossible)
+    let castSpellNormal = castSpell spellcast
     shriekPogoSkips .& scream .& wings .& difficultSkipsifNeeded .& (castSpellNormal .| castSpellStalled)
 
-slopeball :: [Int] -> NearbySoul -> NearbySoul -> Logic
-slopeball casts before after =
-    slopeBallSkips .& fireball .& castSpell casts before after
+slopeball :: Spellcast -> Logic
+slopeball spellcast = slopeBallSkips .& fireball .& castSpell spellcast
