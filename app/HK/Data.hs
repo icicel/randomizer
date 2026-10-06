@@ -4,18 +4,19 @@ import Randomizer
 
 
 -- items
-leftClaw, rightClaw, leftDash, rightDash, leftSuperdash, rightSuperdash, fireball, quake, scream, wings, dreamNail :: Logic
-leftClaw = Item "LEFTCLAW"
-rightClaw = Item "RIGHTCLAW"
-leftDash = Item "LEFTDASH"
-rightDash = Item "RIGHTDASH"
-leftSuperdash = Item "LEFTSUPERDASH"
-rightSuperdash = Item "RIGHTSUPERDASH"
-fireball = Item "FIREBALL"
-quake = Item "QUAKE"
-scream = Item "SCREAM"
-wings = Item "WINGS"
-dreamNail = Item "DREAMNAIL"
+leftClaw, rightClaw, leftDash, rightDash, leftSuperdash, rightSuperdash, fireball, quake, scream, scream_2, wings, dreamNail :: Logic
+leftClaw = Term "LEFTCLAW"
+rightClaw = Term "RIGHTCLAW"
+leftDash = Term "LEFTDASH"
+rightDash = Term "RIGHTDASH"
+leftSuperdash = Term "LEFTSUPERDASH"
+rightSuperdash = Term "RIGHTSUPERDASH"
+fireball = Term "FIREBALL"
+quake = Term "QUAKE"
+scream = Term "SCREAM"
+scream_2 = Terms "SCREAM" 2
+wings = Term "WINGS"
+dreamNail = Term "DREAMNAIL"
 
 -- item macros
 anyClaw, anyDash, anySuperdash, fullClaw, fullDash, fullSuperdash :: Logic
@@ -32,11 +33,11 @@ crystallizedMoundQuakeFloor = quake
 
 -- settings
 preciseMovement, difficultSkips, obscureSkips, shriekPogoSkips, slopeBallSkips :: Logic
-preciseMovement = Setting "PRECISEMOVEMENT"
-difficultSkips = Setting "DIFFICULTSKIPS"
-obscureSkips = Setting "OBSCURESKIPS"
-shriekPogoSkips = Setting "SHRIEKPOGOSKIPS"
-slopeBallSkips = Setting "SLOPEBALLSKIPS"
+preciseMovement = Term "PRECISEMOVEMENT"
+difficultSkips = Term "DIFFICULTSKIPS"
+obscureSkips = Term "OBSCURESKIPS"
+shriekPogoSkips = Term "SHRIEKPOGOSKIPS"
+slopeBallSkips = Term "SLOPEBALLSKIPS"
 
 
 -- spellcasting state variables
@@ -76,7 +77,7 @@ shriekPogo spellcast = do
     let stalledSpellcast = spellcast { casts = replicate castCount 1 }
     let castSpellStalled = castSpell stalledSpellcast .& (leftDashifPossible .| rightDashifPossible)
     let castSpellNormal = castSpell spellcast
-    shriekPogoSkips .& scream .& wings .& difficultSkipsifNeeded .& (castSpellNormal .| castSpellStalled)
+    shriekPogoSkips .& scream_2 .& wings .& difficultSkipsifNeeded .& (castSpellNormal .| castSpellStalled)
 
 slopeball :: Spellcast -> Logic
 slopeball spellcast = slopeBallSkips .& fireball .& castSpell spellcast

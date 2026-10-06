@@ -1,10 +1,8 @@
 module Randomizer where
 
-import Control.Monad.State.Lazy
-
 import qualified Data.Map as Map
 
-data Logic = And Logic Logic | Or Logic Logic | Item Item | Setting Setting | Always | Never
+data Logic = And Logic Logic | Or Logic Logic | Terms Term Int | Term Term | Always | Never
 
 instance Show Logic where
     show (And a b) = show a ++ " & " ++ show b
@@ -13,8 +11,9 @@ instance Show Logic where
             showOr :: Logic -> String
             showOr (Or a b) = showOr a ++ " | " ++ showOr b
             showOr a = show a
-    show (Item s) = s
-    show (Setting s) = "$" ++ s
+    show (Terms s 1) = s
+    show (Terms s n) = s ++ " *" ++ show n
+    show (Term s) = show (Terms s 1)
     show Always = "True"
     show Never = "False"
 
@@ -29,29 +28,22 @@ infixl 5 .|
 data Location = Location String Logic
     deriving (Show)
 
-type Item = String
-type Inventory = [Item]
+type Term = String
+type Inventory = Map.Map Term Int
 
-type Setting = String
-type Settings = Map.Map Setting Bool
-type Randomizer = State Settings
-
-match :: Logic -> Inventory -> Randomizer Bool
-match (And a b) inv = do
-    aResult <- match a inv
-    if aResult
+match :: Logic -> Inventory -> Bool
+match (And a b) inv =
+    if match a inv
         then match b inv
-        else return False
-match (Or a b) inv = do
-    aResult <- match a inv
-    if aResult
-        then return True
+        else False
+match (Or a b) inv =
+    if match a inv
+        then True
         else match b inv
-match (Item item) inv = return $ item `elem` inv
-match (Setting setting) _ = do
-    settings <- get
-    case Map.lookup setting settings of
-        Just value -> return value
-        Nothing -> error $ "Setting not found: " ++ show (Setting setting)
-match Always _ = return True
-match Never _ = return False
+match (Terms item n) inv =
+    case Map.lookup item inv of
+        Just count -> count >= n
+        Nothing -> False
+match (Term item) inv = match (Terms item 1) inv
+match Always _ = True
+match Never _ = False
