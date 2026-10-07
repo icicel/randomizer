@@ -25,7 +25,18 @@ infixl 5 .|
 (.|) :: Logic -> Logic -> Logic
 (.|) = Or
 
+-- a terminal location, associated with one or more items
 data Location = Location String Logic
+    deriving (Show)
+
+-- a nonterminal location without associated items
+data Waypoint = Waypoint String Logic
+    deriving (Show)
+
+-- a nonterminal location with a corresponding item, whose vanilla item is the
+--  corresponding item of the connecting transition (and vice versa)
+-- being able to reach a transition automatically gives its item
+data Transition = Transition String Logic
     deriving (Show)
 
 type Term = String
