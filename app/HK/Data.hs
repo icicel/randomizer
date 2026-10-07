@@ -5,18 +5,18 @@ import Randomizer
 
 -- items
 leftClaw, rightClaw, leftDash, rightDash, leftSuperdash, rightSuperdash, fireball, quake, scream, scream_2, wings, dreamNail :: Logic
-leftClaw = Term "LEFTCLAW"
-rightClaw = Term "RIGHTCLAW"
-leftDash = Term "LEFTDASH"
-rightDash = Term "RIGHTDASH"
-leftSuperdash = Term "LEFTSUPERDASH"
-rightSuperdash = Term "RIGHTSUPERDASH"
-fireball = Term "FIREBALL"
-quake = Term "QUAKE"
-scream = Term "SCREAM"
-scream_2 = Terms "SCREAM" 2
-wings = Term "WINGS"
-dreamNail = Term "DREAMNAIL"
+leftClaw = term "LEFTCLAW"
+rightClaw = term "RIGHTCLAW"
+leftDash = term "LEFTDASH"
+rightDash = term "RIGHTDASH"
+leftSuperdash = term "LEFTSUPERDASH"
+rightSuperdash = term "RIGHTSUPERDASH"
+fireball = term "FIREBALL"
+quake = term "QUAKE"
+scream = term "SCREAM"
+scream_2 = terms "SCREAM" 2
+wings = term "WINGS"
+dreamNail = term "DREAMNAIL"
 
 -- item macros
 anyClaw, anyDash, anySuperdash, fullClaw, fullDash, fullSuperdash :: Logic
@@ -33,11 +33,11 @@ crystallizedMoundQuakeFloor = quake
 
 -- settings
 preciseMovement, difficultSkips, obscureSkips, shriekPogoSkips, slopeBallSkips :: Logic
-preciseMovement = Term "PRECISEMOVEMENT"
-difficultSkips = Term "DIFFICULTSKIPS"
-obscureSkips = Term "OBSCURESKIPS"
-shriekPogoSkips = Term "SHRIEKPOGOSKIPS"
-slopeBallSkips = Term "SLOPEBALLSKIPS"
+preciseMovement = term "PRECISEMOVEMENT"
+difficultSkips = term "DIFFICULTSKIPS"
+obscureSkips = term "OBSCURESKIPS"
+shriekPogoSkips = term "SHRIEKPOGOSKIPS"
+slopeBallSkips = term "SLOPEBALLSKIPS"
 
 
 -- spellcasting state variables

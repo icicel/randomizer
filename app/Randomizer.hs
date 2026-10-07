@@ -2,7 +2,7 @@ module Randomizer where
 
 import qualified Data.Map as Map
 
-data Logic = And Logic Logic | Or Logic Logic | Terms Term Int | Term Term | Always | Never
+data Logic = And Logic Logic | Or Logic Logic | Term Check | Always | Never
 
 instance Show Logic where
     show (And a b) = show a ++ " & " ++ show b
@@ -11,11 +11,21 @@ instance Show Logic where
             showOr :: Logic -> String
             showOr (Or a b) = showOr a ++ " | " ++ showOr b
             showOr a = show a
-    show (Terms s 1) = s
-    show (Terms s n) = s ++ " *" ++ show n
-    show (Term s) = show (Terms s 1)
+    show (Term c) = show c
     show Always = "True"
     show Never = "False"
+
+data Check = Amount Term Int | Bool Term
+
+instance Show Check where
+    show (Amount s n) = s ++ ">=" ++ show n
+    show (Bool s) = s
+
+term :: Term -> Logic
+term = Term . Bool
+
+terms :: Term -> Int -> Logic
+terms s = Term . Amount s
 
 -- and evaluated before or
 infixl 6 .&
@@ -51,10 +61,18 @@ match (Or a b) inv =
     if match a inv
         then True
         else match b inv
-match (Terms item n) inv =
+match (Term (Amount item n)) inv =
     case Map.lookup item inv of
         Just count -> count >= n
         Nothing -> False
-match (Term item) inv = match (Terms item 1) inv
+match (Term (Bool item)) inv = match (Term (Amount item 1)) inv
 match Always _ = True
 match Never _ = False
+
+-- convert to a disjunction of conjunctions (aka an "or" of "ands")
+disjunctiveNormalForm :: Logic -> [[Check]]
+disjunctiveNormalForm (And a b) = [x ++ y | x <- disjunctiveNormalForm a, y <- disjunctiveNormalForm b]
+disjunctiveNormalForm (Or a b) = disjunctiveNormalForm a ++ disjunctiveNormalForm b
+disjunctiveNormalForm (Term c) = [[c]]
+disjunctiveNormalForm Always = [[]]
+disjunctiveNormalForm Never = []
