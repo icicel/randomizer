@@ -1,6 +1,36 @@
 module Randomizer where
 
 import qualified Data.Map as Map
+import qualified Control.Monad.State.Lazy as MState
+
+type Randomizer = MState.State World
+
+data World = World {
+    state :: State
+}
+
+type State = Map.Map String Int
+
+type Item = String
+type Inventory = Map.Map Item Int
+
+-- a terminal location with one or more randomized items
+data Location = Location Item Logic
+    deriving (Show)
+
+-- a terminal location with a static item
+data Event = Event Item Logic
+    deriving (Show)
+
+-- a nonterminal location with a static item
+data Waypoint = Waypoint Item Logic
+    deriving (Show)
+
+-- a nonterminal location with a randomized item
+-- its vanilla item is the corresponding item of the connecting transition (and vice versa)
+-- being able to reach a transition automatically gives its item
+data Transition = Transition Item Logic
+    deriving (Show)
 
 data Logic = And Logic Logic | Or Logic Logic | Term Term | Always | Never
 
@@ -34,27 +64,6 @@ infixl 5 .|
 (.&) = And
 (.|) :: Logic -> Logic -> Logic
 (.|) = Or
-
--- a terminal location with one or more randomized items
-data Location = Location Item Logic
-    deriving (Show)
-
--- a terminal location with a static item
-data Event = Event Item Logic
-    deriving (Show)
-
--- a nonterminal location with a static item
-data Waypoint = Waypoint Item Logic
-    deriving (Show)
-
--- a nonterminal location with a randomized item
--- its vanilla item is the corresponding item of the connecting transition (and vice versa)
--- being able to reach a transition automatically gives its item
-data Transition = Transition Item Logic
-    deriving (Show)
-
-type Item = String
-type Inventory = Map.Map Item Int
 
 match :: Logic -> Inventory -> Bool
 match (And a b) inv =
