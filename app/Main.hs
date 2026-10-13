@@ -6,8 +6,9 @@ import HK.World
 
 main :: IO ()
 main = do
-    print $ name descendingDark
-    print $ name grubCrystallizedMound
+    print (sane hollowKnight)
+    print $ logic descendingDark
+    print $ logic grubCrystallizedMound
     print $ disjunctiveNormalForm $ logic descendingDark
     print $ disjunctiveNormalForm $ logic grubCrystallizedMound
     return ()

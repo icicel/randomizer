@@ -2,18 +2,22 @@ module HK.Data where
 
 import Randomizer
 
-instance Term ID where
-data ID = GRUB | LEFTCLAW | RIGHTCLAW | LEFTDASH | RIGHTDASH | LEFTSUPERDASH | RIGHTSUPERDASH | FIREBALL | QUAKE | SCREAM | WINGS | DREAMNAIL
+instance TermID TID
+data TID = GRUB | LEFTCLAW | RIGHTCLAW | LEFTDASH | RIGHTDASH | LEFTSUPERDASH | RIGHTSUPERDASH | FIREBALL | QUAKE | SCREAM | WINGS | DREAMNAIL
     | PRECISEMOVEMENT | DIFFICULTSKIPS | OBSCURESKIPS | SHRIEKPOGOSKIPS | SLOPEBALLSKIPS | Tutorial_01'right1'
-    deriving (Show, Eq, Ord)
+    deriving (Show, Enum)
 
-instance STerm SID where
-data SID = Todo
-    deriving (Show, Eq, Ord)
+instance NameID NID
+data NID = Descending_Dark | Grub_Crystallized_Mound
+    deriving (Show, Enum)
+
+instance VariableID VID
+data VID = Todo
+    deriving (Show, Enum)
 
 
 -- items
-leftClaw, rightClaw, leftDash, rightDash, leftSuperdash, rightSuperdash, fireball, quake, scream, scream_2, wings, dreamNail :: Logic ID
+leftClaw, rightClaw, leftDash, rightDash, leftSuperdash, rightSuperdash, fireball, quake, scream, scream_2, wings, dreamNail :: Logic
 leftClaw = has LEFTCLAW
 rightClaw = has RIGHTCLAW
 leftDash = has LEFTDASH
@@ -23,12 +27,12 @@ rightSuperdash = has RIGHTSUPERDASH
 fireball = has FIREBALL
 quake = has QUAKE
 scream = has SCREAM
-scream_2 = hasAmount SCREAM 2
+scream_2 = hasAmount 2 SCREAM
 wings = has WINGS
 dreamNail = has DREAMNAIL
 
 -- item macros
-anyClaw, anyDash, anySuperdash, fullClaw, fullDash, fullSuperdash :: Logic ID
+anyClaw, anyDash, anySuperdash, fullClaw, fullDash, fullSuperdash :: Logic
 anyClaw = leftClaw .| rightClaw
 anyDash = leftDash .| rightDash
 anySuperdash = leftSuperdash .| rightSuperdash
@@ -37,11 +41,11 @@ fullDash = leftDash .& rightDash
 fullSuperdash = leftSuperdash .& rightSuperdash
 
 -- waypoints
-crystallizedMoundQuakeFloor :: Logic ID
+crystallizedMoundQuakeFloor :: Logic
 crystallizedMoundQuakeFloor = quake
 
 -- settings
-preciseMovement, difficultSkips, obscureSkips, shriekPogoSkips, slopeBallSkips :: Logic ID
+preciseMovement, difficultSkips, obscureSkips, shriekPogoSkips, slopeBallSkips :: Logic
 preciseMovement = has PRECISEMOVEMENT
 difficultSkips = has DIFFICULTSKIPS
 obscureSkips = has OBSCURESKIPS
@@ -72,10 +76,10 @@ options = Spellcast {
 }
 
 -- TODO: nonterminal logic
-castSpell :: Spellcast -> Logic ID
+castSpell :: Spellcast -> Logic
 castSpell _ = Always
 
-shriekPogo :: Spellcast -> Logic ID
+shriekPogo :: Spellcast -> Logic
 shriekPogo spellcast = do
     let castCount = sum (casts spellcast)
     -- this is a difficult skip if there are 4 or more casts
@@ -88,5 +92,5 @@ shriekPogo spellcast = do
     let castSpellNormal = castSpell spellcast
     shriekPogoSkips .& scream_2 .& wings .& difficultSkipsifNeeded .& (castSpellNormal .| castSpellStalled)
 
-slopeball :: Spellcast -> Logic ID
+slopeball :: Spellcast -> Logic
 slopeball spellcast = slopeBallSkips .& fireball .& castSpell spellcast

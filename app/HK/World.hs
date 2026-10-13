@@ -6,20 +6,19 @@ import Randomizer
 import HK.Data
 
 
-hollowKnight :: World ID SID
-hollowKnight = World {
-    startTerm = Tutorial_01'right1',
-    startState = Map.empty,
-    locations = [
+hollowKnight :: World
+hollowKnight = createWorld
+    Tutorial_01'right1'
+    Map.empty
+    [
         descendingDark,
         grubCrystallizedMound
     ]
-}
 
 -- "name": "Descending_Dark",
 -- "logic": "Mines_35[left1] + Broke_Crystallized_Mound_Quake_Floor + (LEFTCLAW | RIGHTCLAW + PRECISEMOVEMENT + (RIGHTDASH | OBSCURESKIPS + DIFFICULTSKIPS) | WINGS + OBSCURESKIPS | $SHRIEKPOGO[2])"
-descendingDark :: Location ID
-descendingDark = Place "Descending_Dark" (item QUAKE) $
+descendingDark :: Location
+descendingDark = place Descending_Dark (item QUAKE) $
     crystallizedMoundQuakeFloor .& (
         leftClaw
      .| rightClaw .& preciseMovement .& (
@@ -32,8 +31,8 @@ descendingDark = Place "Descending_Dark" (item QUAKE) $
 
 -- "name": "Grub-Crystallized_Mound",
 -- "logic": "Mines_35[left1] + Broke_Crystallized_Mound_Quake_Floor + (LEFTCLAW | RIGHTCLAW + PRECISEMOVEMENT + (RIGHTDASH | OBSCURESKIPS) | WINGS)"
-grubCrystallizedMound :: Location ID
-grubCrystallizedMound = Place "Grub-Crystallized_Mound" (item GRUB) $
+grubCrystallizedMound :: Location
+grubCrystallizedMound = place Grub_Crystallized_Mound (item GRUB) $
     crystallizedMoundQuakeFloor .& (
         leftClaw
      .| rightClaw .& preciseMovement .& (
