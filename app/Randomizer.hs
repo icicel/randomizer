@@ -36,14 +36,8 @@ name n = Label (fromEnum n) (show n)
 -- state variables
 type Variable = Label
 class (Show v, Enum v) => VariableID v
-variable :: VariableID v => v -> Variable
-variable v = Label (fromEnum v) (show v)
-
--- state modifiers
-type ModifierLabel = String
-class (Show m, Enum m) => MLabelID m
-mLabel :: MLabelID m => m -> ModifierLabel
-mLabel = show
+var :: VariableID v => v -> Variable
+var v = Label (fromEnum v) (show v)
 
 
 
@@ -105,6 +99,12 @@ saneTransitions world = all reverseExists transitions
 
 type State = Map.Map Variable Int
 
+lookupVar :: Variable -> State -> Int
+lookupVar = Map.findWithDefault 0
+
+insertVar :: Variable -> Int -> State -> State
+insertVar = Map.insert
+
 newtype Stateset = Stateset [State]
 
 nothing :: Stateset
@@ -126,10 +126,10 @@ merge (Stateset sts) alts = foldr addState alts sts
 union :: [Stateset] -> Stateset
 union = foldr merge nothing
 
-type StateModifier = State -> Stateset
+type StateModifier = State -> Inventory -> [State]
 
-apply :: StateModifier -> Stateset -> Stateset
-apply mf (Stateset sts) = union (map mf sts)
+apply :: StateModifier -> Inventory -> Stateset -> Stateset
+apply mf inventory (Stateset sts) = union $ map Stateset $ map (mf inventory) sts
 
 
 
@@ -224,10 +224,12 @@ infixl 5 .|
 
 data Check = Amount Int Term | Flag Term | Modifier ModifierLabel StateModifier
 
+type ModifierLabel = String
+
 instance Show Check where
     show (Amount n t) = show t ++ ">=" ++ show n
     show (Flag t) = show t
-    show (Modifier m _) = show m
+    show (Modifier m _) = "$" ++ m
 
 has :: TermID t => t -> Logic
 has = Check . Flag . term
@@ -235,8 +237,8 @@ has = Check . Flag . term
 hasAmount :: TermID t => Int -> t -> Logic
 hasAmount n = Check . Amount n . term
 
-stateModifier :: MLabelID m => m -> StateModifier -> Logic
-stateModifier m = Check . Modifier (mLabel m)
+stateModifier :: ModifierLabel -> StateModifier -> Logic
+stateModifier m = Check . Modifier m
 
 
 
@@ -302,4 +304,4 @@ match (Amount n t) inventory alts =
         then alts
         else nothing
 match (Flag t) inventory alts = match (Amount 1 t) inventory alts
-match (Modifier _ mf) _ alts = apply mf alts
+match (Modifier _ mf) inventory alts = apply mf inventory alts
