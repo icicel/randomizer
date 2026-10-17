@@ -9,6 +9,6 @@ main = do
     print (sane hollowKnight)
     print $ logic descendingDark
     print $ logic grubCrystallizedMound
-    print $ disjunctiveNormalForm $ logic descendingDark
-    print $ disjunctiveNormalForm $ logic grubCrystallizedMound
+    print $ normalize $ logic descendingDark
+    print $ normalize $ logic grubCrystallizedMound
     return ()

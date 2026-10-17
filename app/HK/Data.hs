@@ -4,7 +4,9 @@ import Randomizer
 
 instance TermID TID
 data TID = GRUB | LEFTCLAW | RIGHTCLAW | LEFTDASH | RIGHTDASH | LEFTSUPERDASH | RIGHTSUPERDASH | FIREBALL | QUAKE | SCREAM | WINGS | DREAMNAIL
-    | PRECISEMOVEMENT | DIFFICULTSKIPS | OBSCURESKIPS | SHRIEKPOGOSKIPS | SLOPEBALLSKIPS | Tutorial_01'right1'
+    | PRECISEMOVEMENT | DIFFICULTSKIPS | OBSCURESKIPS | SHRIEKPOGOSKIPS | SLOPEBALLSKIPS
+    | Broke_Crystallized_Mound_Quake_Floor
+    | Tutorial_01_right1 | Mines_35_left1
     deriving (Show, Enum)
 
 instance NameID NID
@@ -42,7 +44,7 @@ fullSuperdash = leftSuperdash .& rightSuperdash
 
 -- waypoints
 crystallizedMoundQuakeFloor :: Logic
-crystallizedMoundQuakeFloor = quake
+crystallizedMoundQuakeFloor = has Broke_Crystallized_Mound_Quake_Floor
 
 -- settings
 preciseMovement, difficultSkips, obscureSkips, shriekPogoSkips, slopeBallSkips :: Logic
