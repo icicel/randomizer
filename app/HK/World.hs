@@ -19,7 +19,7 @@ hollowKnight = createWorld
 -- "logic": "Mines_35[left1] + Broke_Crystallized_Mound_Quake_Floor + (LEFTCLAW | RIGHTCLAW + PRECISEMOVEMENT + (RIGHTDASH | OBSCURESKIPS + DIFFICULTSKIPS) | WINGS + OBSCURESKIPS | $SHRIEKPOGO[2])"
 descendingDark :: Location
 descendingDark = place Descending_Dark (item QUAKE) $
-    entry Mines_35_left1 !& crystallizedMoundQuakeFloor .& (
+    has Mines_35_left1 .& crystallizedMoundQuakeFloor .& (
         leftClaw
      .| rightClaw .& preciseMovement .& (
             rightDash
@@ -33,7 +33,7 @@ descendingDark = place Descending_Dark (item QUAKE) $
 -- "logic": "Mines_35[left1] + Broke_Crystallized_Mound_Quake_Floor + (LEFTCLAW | RIGHTCLAW + PRECISEMOVEMENT + (RIGHTDASH | OBSCURESKIPS) | WINGS)"
 grubCrystallizedMound :: Location
 grubCrystallizedMound = place Grub_Crystallized_Mound (item GRUB) $
-    entry Mines_35_left1 !& crystallizedMoundQuakeFloor .& (
+    has Mines_35_left1 .& crystallizedMoundQuakeFloor .& (
         leftClaw
      .| rightClaw .& preciseMovement .& (
             rightDash
@@ -46,4 +46,4 @@ grubCrystallizedMound = place Grub_Crystallized_Mound (item GRUB) $
 -- "logic": "Mines_35[left1] + QUAKE + $CASTSPELL",
 brokeCrystallizedMoundQuakeFloor :: Location
 brokeCrystallizedMoundQuakeFloor = event Broke_Crystallized_Mound_Quake_Floor $
-    entry Mines_35_left1 !& quake .& castSpell options
+    has Mines_35_left1 .& quake .& castSpell options
