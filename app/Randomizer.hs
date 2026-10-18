@@ -126,10 +126,14 @@ merge (Stateset sts) alts = foldr addState alts sts
 union :: [Stateset] -> Stateset
 union = foldr merge nothing
 
-type StateModifier = State -> Inventory -> [State]
+data StateModifier = StateModifier {
+    label :: String,
+    dependencies :: [Term],
+    modify :: State -> Inventory -> [State]
+}
 
 apply :: StateModifier -> Inventory -> Stateset -> Stateset
-apply mf inventory (Stateset sts) = union $ map Stateset $ map (mf inventory) sts
+apply sm inventory (Stateset sts) = union $ map Stateset $ map (modify sm inventory) sts
 
 
 
@@ -222,14 +226,14 @@ infixl 5 .|
 (.|) :: Logic -> Logic -> Logic
 (.|) = Or
 
-data Check = Amount Int Term | Flag Term | Modifier ModifierLabel StateModifier
+data Check = Amount Int Term | Flag Term | Modifier StateModifier
 
 type ModifierLabel = String
 
 instance Show Check where
     show (Amount n t) = show t ++ ">=" ++ show n
     show (Flag t) = show t
-    show (Modifier m _) = "$" ++ m
+    show (Modifier sm) = "$" ++ label sm
 
 has :: TermID t => t -> Logic
 has = Check . Flag . term
@@ -237,8 +241,8 @@ has = Check . Flag . term
 hasAmount :: TermID t => Int -> t -> Logic
 hasAmount n = Check . Amount n . term
 
-stateModifier :: ModifierLabel -> StateModifier -> Logic
-stateModifier m = Check . Modifier m
+stateModifier :: TermID t => String -> [t] -> (State -> Inventory -> [State]) -> Logic
+stateModifier l deps = Check . Modifier . StateModifier l (map term deps)
 
 
 
@@ -269,7 +273,7 @@ resolveClause (provider:checks) inventory progress = do
     let start = case provider of
             Amount _ _ -> error $ "Amount check " ++ show provider ++ " cannot be a state provider"
             Flag t -> lookupProgress t progress
-            Modifier _ mf -> apply mf inventory defaultStatePlaceholder
+            Modifier mf -> apply mf inventory defaultStatePlaceholder
     foldl (\alts check -> match check inventory alts) start checks
 
 match :: Check -> Inventory -> Stateset -> Stateset
@@ -279,4 +283,4 @@ match (Amount n t) inventory alts =
         then alts
         else nothing
 match (Flag t) inventory alts = match (Amount 1 t) inventory alts
-match (Modifier _ mf) inventory alts = apply mf inventory alts
+match (Modifier mf) inventory alts = apply mf inventory alts

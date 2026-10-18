@@ -99,37 +99,40 @@ options = Spellcast {
     after = None
 }
 
--- TODO: nonterminal logic
 castSpell :: Spellcast -> Logic
-castSpell spellcast = stateModifier ("CASTSPELL" ++ show spellcast) $ \state inventory -> do
-    let restoreBefore = case before spellcast of None -> False; _ -> True
-    let restoreAfter = case after spellcast of None -> False; _ -> True
-    let vessels = lookupItem (term VESSELFRAGMENTS) inventory `div` 4
-    let maxSoul = 99 :: Int
-    let maxReserveSoul = vessels * 33
-    let spentSoul = if restoreBefore then 0 else lookupVar (var SPENTSOUL) state
-    let spentReserveSoul = if restoreBefore then 0 else lookupVar (var SPENTRESERVESOUL) state
-    let soul = maxSoul - spentSoul
-    let reserveSoul = maxReserveSoul - spentReserveSoul
-    let (success, leftSoul, leftReserveSoul) = performSequence (casts spellcast) soul reserveSoul
-    let finalSpentSoul = if restoreAfter then 0 else maxSoul - leftSoul
-    let finalSpentReserveSoul = if restoreAfter then 0 else maxReserveSoul - leftReserveSoul
-    if success then
-        [insertVar (var SPENTSOUL) finalSpentSoul $
-        insertVar (var SPENTRESERVESOUL) finalSpentReserveSoul
-        state]
+castSpell spellcast = stateModifier
+    ("CASTSPELL" ++ show spellcast)
+    [VESSELFRAGMENTS]
+    (\state inventory -> do
+        let restoreBefore = case before spellcast of None -> False; _ -> True
+        let restoreAfter = case after spellcast of None -> False; _ -> True
+        let vessels = lookupItem (term VESSELFRAGMENTS) inventory `div` 4
+        let maxSoul = 99 :: Int
+        let maxReserveSoul = vessels * 33
+        let spentSoul = if restoreBefore then 0 else lookupVar (var SPENTSOUL) state
+        let spentReserveSoul = if restoreBefore then 0 else lookupVar (var SPENTRESERVESOUL) state
+        let soul = maxSoul - spentSoul
+        let reserveSoul = maxReserveSoul - spentReserveSoul
+        let (success, leftSoul, leftReserveSoul) = performSequence (casts spellcast) soul reserveSoul
+        let finalSpentSoul = if restoreAfter then 0 else maxSoul - leftSoul
+        let finalSpentReserveSoul = if restoreAfter then 0 else maxReserveSoul - leftReserveSoul
+        if success then
+            [insertVar (var SPENTSOUL) finalSpentSoul $
+            insertVar (var SPENTRESERVESOUL) finalSpentReserveSoul
+            state]
+        else
+            []
+    )
+
+performSequence :: [Int] -> Int -> Int -> (Bool, Int, Int)
+performSequence [] soul reserveSoul = (True, soul, reserveSoul)
+performSequence (castGroup:rest) soul reserveSoul = do
+    let cost = castGroup * 33
+    let refill = min cost reserveSoul
+    if cost <= soul
+        then performSequence rest (soul - cost + refill) (reserveSoul - refill)
     else
-        []
-    where
-        performSequence :: [Int] -> Int -> Int -> (Bool, Int, Int)
-        performSequence [] soul reserveSoul = (True, soul, reserveSoul)
-        performSequence (castGroup:rest) soul reserveSoul = do
-            let cost = castGroup * 33
-            let refill = min cost reserveSoul
-            if cost <= soul
-                then performSequence rest (soul - cost + refill) (reserveSoul - refill)
-            else
-                (False, soul, reserveSoul)
+        (False, soul, reserveSoul)
 
 shriekPogo :: Spellcast -> Logic
 shriekPogo spellcast = do
