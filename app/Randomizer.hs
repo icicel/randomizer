@@ -1,5 +1,6 @@
 module Randomizer where
 
+import qualified Data.List as List
 import qualified Data.Map as Map
 import qualified Control.Monad.State.Lazy as MState
 
@@ -284,3 +285,13 @@ match (Amount n t) inventory alts =
         else nothing
 match (Flag t) inventory alts = match (Amount 1 t) inventory alts
 match (Modifier mf) inventory alts = apply mf inventory alts
+
+
+
+printNormalized :: Logic -> IO ()
+printNormalized = putStrLn . showLogic . normalize
+    where
+        showLogic :: NormalizedLogic -> String
+        showLogic nlg = List.intercalate "\n| " $ map showClause nlg
+        showClause :: Clause -> String
+        showClause clause = List.intercalate " & " $ map show clause

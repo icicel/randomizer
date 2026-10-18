@@ -9,6 +9,8 @@ main = do
     print (sane hollowKnight)
     print $ logic descendingDark
     print $ logic grubCrystallizedMound
-    print $ normalize $ logic descendingDark
-    print $ normalize $ logic grubCrystallizedMound
+    print $ logic brokeCrystallizedMoundQuakeFloor
+    printNormalized $ logic descendingDark
+    printNormalized $ logic grubCrystallizedMound
+    printNormalized $ logic brokeCrystallizedMoundQuakeFloor
     return ()
