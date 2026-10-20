@@ -1,6 +1,6 @@
 module HK.Data where
 
-import Data.List
+import qualified Data.List as List
 
 import Logic
 
@@ -73,7 +73,7 @@ data Spellcast = Spellcast {
 
 instance Show Spellcast where
     show spellcast = do
-        let castsStr = intercalate "," $ map show $ casts spellcast
+        let castsStr = List.intercalate "," $ map show $ casts spellcast
         let canLeftStallStr = if (canLeftStall spellcast) then "LEFTSTALL" else "NOLEFTSTALL"
         let canRightStallStr = if (canRightStall spellcast) then "RIGHTSTALL" else "NORIGHTSTALL"
         let beforeStr = "before:" ++ show (before spellcast)
@@ -84,7 +84,7 @@ instance Show Spellcast where
         let res3 = if (not $ canRightStall spellcast) then canRightStallStr : res2 else res2
         let res4 = if (not $ before spellcast == None) then beforeStr : res3 else res3
         let res5 = if (not $ after spellcast == None) then afterStr : res4 else res4
-        if null res5 then [] else "[" ++ intercalate "," res5 ++ "]"
+        if null res5 then [] else "[" ++ List.intercalate "," res5 ++ "]"
 
 data NearbySoul = None | ItemSoul | MapAreaSoul | AreaSoul | RoomSoul
     deriving (Eq, Show)

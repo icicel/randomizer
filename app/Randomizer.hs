@@ -99,6 +99,6 @@ printNormalized :: Logic -> IO ()
 printNormalized = putStrLn . showLogic . normalize
     where
         showLogic :: NormalizedLogic -> String
-        showLogic nlg = List.intercalate "\n| " $ map showClause nlg
+        showLogic = List.intercalate "\n| " . map showClause
         showClause :: Clause -> String
-        showClause clause = List.intercalate " & " $ map show clause
+        showClause = List.intercalate " & " . map show
