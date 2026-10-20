@@ -1,6 +1,7 @@
 module Main(main) where
 
 import Randomizer
+import Logic
 
 import HK.World
 

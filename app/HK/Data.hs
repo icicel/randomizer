@@ -2,7 +2,7 @@ module HK.Data where
 
 import Data.List
 
-import Randomizer
+import Logic
 
 instance TermID TID
 data TID =

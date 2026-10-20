@@ -63,6 +63,7 @@ executable randomizer
     -- Modules included in this executable, other than Main.
     other-modules:
         Randomizer
+        Logic
         HK.Data
         HK.World
 

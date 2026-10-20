@@ -2,7 +2,7 @@ module HK.World where
 
 import qualified Data.Map as Map
 
-import Randomizer
+import Logic
 import HK.Data
 
 
