@@ -25,15 +25,19 @@ data VID = SPENTSOUL | SPENTRESERVESOUL
 
 
 -- items
-leftClaw, rightClaw, leftDash, rightDash, leftSuperdash, rightSuperdash, fireball, quake, scream, scream_2, wings, dreamNail :: Logic
+leftClaw, leftClaw_2, rightClaw, rightClaw_2, leftDash, rightDash, leftSuperdash, rightSuperdash, fireball, fireball_2, quake, quake_2, scream, scream_2, wings, dreamNail :: Logic
 leftClaw = has LEFTCLAW
+leftClaw_2 = hasAmount 2 LEFTCLAW .| hasAmount 2 RIGHTCLAW .& leftClaw
 rightClaw = has RIGHTCLAW
+rightClaw_2 = hasAmount 2 RIGHTCLAW .| hasAmount 2 LEFTCLAW .& rightClaw
 leftDash = has LEFTDASH
 rightDash = has RIGHTDASH
 leftSuperdash = has LEFTSUPERDASH
 rightSuperdash = has RIGHTSUPERDASH
 fireball = has FIREBALL
+fireball_2 = hasAmount 2 FIREBALL
 quake = has QUAKE
+quake_2 = hasAmount 2 QUAKE
 scream = has SCREAM
 scream_2 = hasAmount 2 SCREAM
 wings = has WINGS
