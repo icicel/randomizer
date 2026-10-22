@@ -575,23 +575,39 @@ data VID = SPENTSOUL | SPENTRESERVESOUL
 
 
 -- items
-leftClaw, leftClaw_2, rightClaw, rightClaw_2, leftDash, rightDash, leftSuperdash, rightSuperdash, fireball, fireball_2, quake, quake_2, scream, scream_2, wings, dreamNail :: Logic
-leftClaw = has LEFTCLAW
-leftClaw_2 = hasAmount 2 LEFTCLAW .| hasAmount 2 RIGHTCLAW .& leftClaw
-rightClaw = has RIGHTCLAW
-rightClaw_2 = hasAmount 2 RIGHTCLAW .| hasAmount 2 LEFTCLAW .& rightClaw
+dreamer, lurien, monomon, herrah, worldSense, leftDash, leftDash_2, rightDash, rightDash_2, leftClaw, rightClaw, leftSuperdash, rightSuperdash, wings, acid, dreamNail, dreamNail_2, dreamNail_3, spells, fireball, fireball_2, quake, quake_2, scream, scream_2, cycloneSlash, dashSlash, greatSlash, focus :: Logic
+dreamer = has DREAMER
+lurien = has LURIEN
+monomon = has MONOMON
+herrah = has HERRAH
+worldSense = has WORLDSENSE
 leftDash = has LEFTDASH
+leftDash_2 = hasAmount 2 LEFTDASH .| hasAmount 2 RIGHTDASH .& leftDash
 rightDash = has RIGHTDASH
+rightDash_2 = hasAmount 2 RIGHTDASH .| hasAmount 2 LEFTDASH .& rightDash
+leftClaw = has LEFTCLAW
+rightClaw = has RIGHTCLAW
 leftSuperdash = has LEFTSUPERDASH
 rightSuperdash = has RIGHTSUPERDASH
+wings = has WINGS
+acid = has ACID
+dreamNail = has DREAMNAIL
+dreamNail_2 = hasAmount 2 DREAMNAIL
+dreamNail_3 = hasAmount 3 DREAMNAIL
+spells = has SPELLS
 fireball = has FIREBALL
 fireball_2 = hasAmount 2 FIREBALL
 quake = has QUAKE
 quake_2 = hasAmount 2 QUAKE
 scream = has SCREAM
 scream_2 = hasAmount 2 SCREAM
-wings = has WINGS
-dreamNail = has DREAMNAIL
+cycloneSlash = has CYCLONESLASH
+dashSlash = has DASHSLASH
+greatSlash = has GREATSLASH
+focus = has FOCUS
+
+shopKey :: Logic
+shopKey = has SHOPKEY
 
 -- item macros
 anyClaw, anyDash, anySuperdash, fullClaw, fullDash, fullSuperdash :: Logic
@@ -602,17 +618,35 @@ fullClaw = leftClaw .& rightClaw
 fullDash = leftDash .& rightDash
 fullSuperdash = leftSuperdash .& rightSuperdash
 
--- waypoints
-crystallizedMoundQuakeFloor :: Logic
-crystallizedMoundQuakeFloor = has Broke_Crystallized_Mound_Quake_Floor
-
 -- settings
-preciseMovement, difficultSkips, obscureSkips, shriekPogoSkips, slopeBallSkips :: Logic
+itemRando, mapAreaRando, fullAreaRando, roomRando, preciseMovement, proficientCombat, backgroundPogos, enemyPogos, obscureSkips, shadeSkips, infectionSkips, fireballSkips, spikeTunnels, acidSkips, damageBoosts, dangerousSkips, darkRooms, complexSkips, difficultSkips, slopeballSkips, shriekPogoSkips, randomNail, cursed, randomFocus, cursedMasks, cursedNotches, randomElevators :: Logic
+itemRando = has ITEMRANDO
+mapAreaRando = has MAPAREARANDO
+fullAreaRando = has FULLAREARANDO
+roomRando = has ROOMRANDO
 preciseMovement = has PRECISEMOVEMENT
-difficultSkips = has DIFFICULTSKIPS
+proficientCombat = has PROFICIENTCOMBAT
+backgroundPogos = has BACKGROUNDPOGOS
+enemyPogos = has ENEMYPOGOS
 obscureSkips = has OBSCURESKIPS
+shadeSkips = has SHADESKIPS
+infectionSkips = has INFECTIONSKIPS
+fireballSkips = has FIREBALLSKIPS
+spikeTunnels = has SPIKETUNNELS
+acidSkips = has ACIDSKIPS
+damageBoosts = has DAMAGEBOOSTS
+dangerousSkips = has DANGEROUSSKIPS
+darkRooms = has DARKROOMS
+complexSkips = has COMPLEXSKIPS
+difficultSkips = has DIFFICULTSKIPS
+slopeballSkips = has SLOPEBALLSKIPS
 shriekPogoSkips = has SHRIEKPOGOSKIPS
-slopeBallSkips = has SLOPEBALLSKIPS
+randomNail = has RANDOMNAIL
+cursed = has CURSED
+randomFocus = has RANDOMFOCUS
+cursedMasks = has CURSEDMASKS
+cursedNotches = has CURSEDNOTCHES
+randomElevators = has RANDOMELEVATORS
 
 
 -- spellcasting state modifiers
@@ -702,4 +736,4 @@ shriekPogo spellcast = do
     shriekPogoSkips .& scream_2 .& wings .& difficultSkipsifNeeded .& (castSpellNormal .| castSpellStalled)
 
 slopeball :: Spellcast -> Logic
-slopeball spellcast = slopeBallSkips .& fireball .& castSpell spellcast
+slopeball spellcast = slopeballSkips .& fireball .& castSpell spellcast

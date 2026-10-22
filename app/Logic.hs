@@ -118,7 +118,7 @@ lookupProgress = Map.findWithDefault nothing
 
 
 data Location =
-    Place Name Item Logic |
+    Place Name [Item] Logic |
     Event Term Logic |
     Waypoint Term Logic |
     Transition Term Term Logic
@@ -129,11 +129,13 @@ instance Show Location where
     show (Waypoint t _) = show t
     show (Transition from to _) = show from ++ "->" ++ show to
 
--- a terminal location with a randomized item
+-- a terminal location with one or more randomized items
 -- the only location type where two different locations may give the same term, so uses a
 --  name instead of a term for identification
 place :: NameID n => n -> Item -> Logic -> Location
-place = Place . name
+place n i = multiPlace n [i]
+multiPlace :: NameID n => n -> [Item] -> Logic -> Location
+multiPlace = Place . name
 
 -- a terminal location with a static term
 event :: TermID t => t -> Logic -> Location
