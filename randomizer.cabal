@@ -65,6 +65,10 @@ executable randomizer
         Randomizer
         Logic
         HK.Data
+        HK.Data.Events
+        HK.Data.Places
+        HK.Data.Transitions
+        HK.Data.Waypoints
         HK.World
 
     -- LANGUAGE extensions used by modules in this package.
