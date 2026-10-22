@@ -32,7 +32,7 @@ descendingDark = place Descending_Dark (item QUAKE) $
 -- "name": "Grub-Crystallized_Mound",
 -- "logic": "Mines_35[left1] + Broke_Crystallized_Mound_Quake_Floor + (LEFTCLAW | RIGHTCLAW + PRECISEMOVEMENT + (RIGHTDASH | OBSCURESKIPS) | WINGS)"
 grubCrystallizedMound :: Location
-grubCrystallizedMound = place Grub_Crystallized_Mound (item GRUB) $
+grubCrystallizedMound = place Grub_Crystallized_Mound (item GRUBS) $
     has Mines_35_left1 .& crystallizedMoundQuakeFloor .& (
         leftClaw
      .| rightClaw .& preciseMovement .& (
