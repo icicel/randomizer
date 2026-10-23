@@ -75,14 +75,14 @@ newtype Placements = Placements [(Name, Int)]
 at :: NameID n => n -> Placements
 at n = Placements [(name n, 1)]
 
-multiAt :: NameID n => n -> Int -> Placements
-multiAt n i = Placements [(name n, i)]
+amountAt :: NameID n => n -> Int -> Placements
+amountAt n i = Placements [(name n, i)]
 
 atMany :: NameID n => [n] -> Placements
 atMany ns = Placements [(name n, 1) | n <- ns]
 
-multiAtMany :: NameID n => [(n, Int)] -> Placements
-multiAtMany ns = Placements [(name n, i) | (n, i) <- ns]
+amountAtMany :: NameID n => [(n, Int)] -> Placements
+amountAtMany ns = Placements [(name n, i) | (n, i) <- ns]
 
 type Inventory = Map.Map Term Int
 
@@ -109,12 +109,23 @@ nothing = Stateset []
 single :: State -> Stateset
 single st = Stateset [st]
 
--- add if greater than any existing state
+-- add the state unless it is "strictly less" than all existing states, meaning
+--  all its values are equal or lesser than the other states' corresponding values
+-- this is a partial ordering (two states could be neither > nor < nor == to each other),
+--  so we can't use the existing instance of Ord for Map
+-- how it works: `isSubmapOfBy f a b` checks whether all keys of a are in b, and if so,
+--  whether all values of a are related by f to the corresponding values in b
+-- that means that for states, there are two cases;
+-- 1) not all keys of a are in b, in which case strictlyLessThan a b = False
+-- 2) all keys of a are in b, in which case strictlyLessThan a b = whether all values
+--  in a are <= to the corresponding values in b
 addState :: State -> Stateset -> Stateset
 addState st (Stateset sts) =
-    if any (< st) sts
-        then Stateset (st:sts)
-        else Stateset sts
+    if all (strictlyLessThan st) sts
+        then Stateset sts
+        else Stateset (st:sts)
+    where
+        strictlyLessThan = Map.isSubmapOfBy (<=)
 
 merge :: Stateset -> Stateset -> Stateset
 merge (Stateset sts) alts = foldr addState alts sts
