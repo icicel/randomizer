@@ -54,26 +54,35 @@ createWorld t = World (term t)
 
 data Item = Item {
     itemTerm :: Term,
-    placements :: [Placement],
+    placements :: Placements,
     collectorTerm :: Maybe (Term, Int)
 }
 
-type Placement = (Name, Int)
-
-definePlacements :: NameID n => [(n, Int)] -> [Placement]
-definePlacements = map (\(n, c) -> (name n, c))
-
 -- simple item
-item :: (TermID t, NameID n) => t -> [(n, Int)] -> Item
-item t places = Item (term t) (definePlacements places) Nothing
+item :: TermID t => t -> Placements -> Item
+item t places = Item (term t) places Nothing
 
 -- item with a collector term, incremented when the item term is first collected
-collectedItem :: (TermID t, NameID n, TermID c) => t -> [(n, Int)] -> c -> Item
-collectedItem t places c = Item (term t) (definePlacements places) (Just (term c, 1))
+itemType :: (TermID t, TermID c) => t -> c -> Placements -> Item
+itemType t c places = Item (term t) places (Just (term c, 1))
 
 -- item with a collector term, incremented when n of the item term have been collected
-multipartCollectedItem :: (TermID t, NameID n, TermID c) => t -> [(n, Int)] -> c -> Int -> Item
-multipartCollectedItem t places c n = Item (term t) (definePlacements places) (Just (term c, n))
+multipartItemType :: (TermID t, TermID c) => t -> c -> Int -> Placements -> Item
+multipartItemType t c n places = Item (term t) places (Just (term c, n))
+
+newtype Placements = Placements [(Name, Int)]
+
+at :: NameID n => n -> Placements
+at n = Placements [(name n, 1)]
+
+multiAt :: NameID n => n -> Int -> Placements
+multiAt n i = Placements [(name n, i)]
+
+atMany :: NameID n => [n] -> Placements
+atMany ns = Placements [(name n, 1) | n <- ns]
+
+multiAtMany :: NameID n => [(n, Int)] -> Placements
+multiAtMany ns = Placements [(name n, i) | (n, i) <- ns]
 
 type Inventory = Map.Map Term Int
 

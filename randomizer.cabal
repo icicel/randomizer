@@ -66,6 +66,7 @@ executable randomizer
         Logic
         HK.Data
         HK.Data.Events
+        HK.Data.Items
         HK.Data.Places
         HK.Data.Transitions
         HK.Data.Waypoints
