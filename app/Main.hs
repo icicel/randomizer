@@ -34,11 +34,14 @@ main = do
     M.unless (sane hollowKnight) $ error "World is not sane"
     let descendingDark = findPlace Descending_Dark
     let grubCrystallizedMound = findPlace Grub_Crystallized_Mound
-    let brokeCrystallizedMoundQuakeFloor = findLocation Broke_Crystallized_Mound_Quake_Floor
+    let herrahPlace = findPlace Herrah
     print $ logic descendingDark
     print $ logic grubCrystallizedMound
-    print $ logic brokeCrystallizedMoundQuakeFloor
+    print $ logic herrahPlace
     printNormalized $ logic descendingDark
     printNormalized $ logic grubCrystallizedMound
-    printNormalized $ logic brokeCrystallizedMoundQuakeFloor
+    printNormalized $ logic herrahPlace
+    print $ normalizedSize $ logic descendingDark
+    print $ normalizedSize $ logic grubCrystallizedMound
+    print $ normalizedSize $ logic herrahPlace
     return ()

@@ -64,6 +64,15 @@ normalize (Check c) = [[c]]
 normalize Always = [[]]
 normalize Never = []
 
+-- the number of clauses produced by normalizing
+-- should optimally never exceed 1000
+normalizedSize :: Logic -> Int
+normalizedSize (And a b) = normalizedSize a * normalizedSize b
+normalizedSize (Or a b) = normalizedSize a + normalizedSize b
+normalizedSize (Check _) = 1
+normalizedSize Always = 1
+normalizedSize Never = 0
+
 -- todo: should be the start state defined in World, but this requires the main randomizer monad
 defaultStatePlaceholder :: Stateset
 defaultStatePlaceholder = undefined

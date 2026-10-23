@@ -41,6 +41,44 @@ places = [
         has RestingGrounds_07_right1
     ,
 
+    place Lurien $
+        has Ruins2_Watcher_Room_bot1 .& dreamNail
+    ,
+
+    place Monomon $
+        has Uumuu_Arena .& has Defeated_Uumuu .& dreamNail .& (
+            acid .& leftClaw
+         .| acid .& rightClaw .& wings
+         .| leftSuperdash .& fullClaw
+         .| leftSuperdash .& rightClaw .& wings
+         .| rightSuperdash .& leftClaw .& wings
+         .| acid .& shriekPogo options{casts=[3], before=ROOMSOUL}
+         .| leftDash .& anyClaw .& acidSkips .& shriekPogo options{casts=[2], before=ROOMSOUL}
+         .| leftDash .& acidSkips .& complexSkips .& shriekPogo options{casts=[5]}
+        -- .| fullClaw .& wings .& fullSharpShadow .& fireball .& fireballSkips .& acidSkips .& complexSkips
+        )
+    ,
+
+    place Herrah $
+        has Deepnest_Spider_Town_left1 .& dreamNail .& (
+            wings .& anyClaw .& (
+                herrah
+             .| combatRightDevout
+            )
+         .| (
+                fullClaw
+             .| enemyPogos .& shriekPogo options{casts=[2], before=ROOMSOUL} .& shriekPogo options{casts=[2], before=ROOMSOUL} .& shriekPogo options{casts=[3], before=ROOMSOUL}
+            ) .& (
+                herrah .& combatLeftDevout
+             .| combatAnyDevout
+            )
+        )
+     .| has Bench_Beast's_Den .& shriekPogo options{casts=[1,2,2]} .& shriekPogo options{casts=[3], before=ROOMSOUL} .& (
+            herrah
+         .| combatLeftDevout
+        )
+    ,    
+
     place Descending_Dark $
         has Mines_35_left1 .& has Broke_Crystallized_Mound_Quake_Floor .& (
             leftClaw
@@ -49,7 +87,7 @@ places = [
              .| obscureSkips .& difficultSkips
             )
          .| wings .& obscureSkips
-         .| shriekPogo options{casts = [2]}
+         .| shriekPogo options{casts=[2]}
         )
     ,
 

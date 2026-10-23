@@ -574,7 +574,8 @@ data VID = SPENTSOUL | SPENTRESERVESOUL
     deriving (Show, Enum)
 
 
--- items
+-- base item checks
+
 dreamer, dreamer_3, lurien, monomon, herrah, worldSense :: Logic
 dreamer = has DREAMER
 dreamer_3 = hasAmount 3 DREAMER
@@ -583,11 +584,9 @@ monomon = has MONOMON
 herrah = has HERRAH
 worldSense = has WORLDSENSE
 
-leftDash, leftDash_2, rightDash, rightDash_2, leftClaw, rightClaw, leftSuperdash, rightSuperdash, wings, acid, dreamNail, dreamNail_2, dreamNail_3, spells, fireball, fireball_2, quake, quake_2, scream, scream_2, cycloneSlash, dashSlash, greatSlash, focus :: Logic
+leftDash, rightDash, leftClaw, rightClaw, leftSuperdash, rightSuperdash, wings, acid, dreamNail, dreamNail_2, dreamNail_3 :: Logic
 leftDash = has LEFTDASH
-leftDash_2 = hasAmount 2 LEFTDASH .| hasAmount 2 RIGHTDASH .& leftDash
 rightDash = has RIGHTDASH
-rightDash_2 = hasAmount 2 RIGHTDASH .| hasAmount 2 LEFTDASH .& rightDash
 leftClaw = has LEFTCLAW
 rightClaw = has RIGHTCLAW
 leftSuperdash = has LEFTSUPERDASH
@@ -597,7 +596,10 @@ acid = has ACID
 dreamNail = has DREAMNAIL
 dreamNail_2 = hasAmount 2 DREAMNAIL
 dreamNail_3 = hasAmount 3 DREAMNAIL
+
+spells, spells_2, fireball, fireball_2, quake, quake_2, scream, scream_2, cycloneSlash, dashSlash, greatSlash :: Logic
 spells = has SPELLS
+spells_2 = hasAmount 2 SPELLS
 fireball = has FIREBALL
 fireball_2 = hasAmount 2 FIREBALL
 quake = has QUAKE
@@ -607,21 +609,123 @@ scream_2 = hasAmount 2 SCREAM
 cycloneSlash = has CYCLONESLASH
 dashSlash = has DASHSLASH
 greatSlash = has GREATSLASH
+
+focus, leftSlash, rightSlash, upSlash, downSlash :: Logic
 focus = has FOCUS
+leftSlash = has LEFTSLASH
+rightSlash = has RIGHTSLASH
+upSlash = has UPSLASH
+downSlash = has DOWNSLASH
 
 shopKey :: Logic
 shopKey = has SHOPKEY
 
+
 -- item macros
-anyClaw, anyDash, anySuperdash, fullClaw, fullDash, fullSuperdash :: Logic
+
+anyClaw, fullClaw, anyDash, fullDash, anySuperdash, fullSuperdash :: Logic
 anyClaw = leftClaw .| rightClaw
-anyDash = leftDash .| rightDash
-anySuperdash = leftSuperdash .| rightSuperdash
 fullClaw = leftClaw .& rightClaw
+anyDash = leftDash .| rightDash
 fullDash = leftDash .& rightDash
+anySuperdash = leftSuperdash .| rightSuperdash
 fullSuperdash = leftSuperdash .& rightSuperdash
 
+leftShadowDash, rightShadowDash, anyShadowDash, fullShadowDash, leftDashSlash, rightDashSlash, anyDashSlash, fullDashSlash :: Logic
+leftShadowDash = hasAmount 2 LEFTDASH .| hasAmount 2 RIGHTDASH .& leftDash
+rightShadowDash = hasAmount 2 RIGHTDASH .| hasAmount 2 LEFTDASH .& rightDash
+anyShadowDash = leftShadowDash .| rightShadowDash
+fullShadowDash = leftShadowDash .& rightShadowDash
+leftDashSlash = dashSlash .& leftDash
+rightDashSlash = dashSlash .& rightDash
+anyDashSlash = leftDashSlash .| rightDashSlash
+fullDashSlash = leftDashSlash .& rightDashSlash
+
+sideSlash :: Logic
+sideSlash = leftSlash .| rightSlash
+
+
+-- combat macros
+
+upWallBreak, mildCombatSkips, spicyCombatSkips, nailCombat, miniBoss, aerialMiniBoss, boss, bossFluke :: Logic
+upWallBreak = sideSlash .| upSlash .| fireball .| scream .| quake .| cycloneSlash .| greatSlash .| fullDashSlash
+mildCombatSkips = proficientCombat
+spicyCombatSkips = difficultSkips .& proficientCombat
+nailCombat =
+    sideSlash
+ .| upSlash
+ .| mildCombatSkips .& (cycloneSlash .| greatSlash)
+ .| spicyCombatSkips
+miniBoss =
+    spells .& nailCombat
+ .| spicyCombatSkips
+aerialMiniBoss =
+    (fireball .| scream) .& anyDash .& (sideSlash .| upSlash)
+ .| mildCombatSkips .& (fireball .| scream) .& (sideSlash .| upSlash)
+ .| spicyCombatSkips .& (sideSlash .| upSlash .| cycloneSlash .| greatSlash)
+boss =
+    spells_2 .& (anyDash .& (sideSlash .| upSlash)
+ .| mildCombatSkips .& nailCombat)
+bossFluke =
+    fireball_2
+ .| scream_2
+ .| spells_2 .& mildCombatSkips
+ .| cursed .& (fireball .| scream)
+
+combatGruzMother, combatFalseKnight, combatBroodingMawlek, combatHornet1, combatMantisLords, combatSanctumWarrior, combatSoulMaster, combatElegantWarrior, combatCrystalGuardian, combatEnragedGuardian, combatFlukemarm, combatDungDefender, combatBrokenVessel :: Logic
+combatGruzMother = Always
+combatFalseKnight = Always
+combatBroodingMawlek = miniBoss
+combatHornet1 = Always
+combatMantisLords = Always
+combatSanctumWarrior = Always
+combatSoulMaster = nailCombat
+combatElegantWarrior = miniBoss
+combatCrystalGuardian = Always
+combatEnragedGuardian = boss
+combatFlukemarm = bossFluke
+combatDungDefender = boss
+combatBrokenVessel = miniBoss
+
+combatHornet2, combatWatcherKnights, combatUumuu, combatNosk, combatTraitorLord, combatGrimm, combatCollector, combatHiveKnight, combatPaleLurker :: Logic
+combatHornet2 = boss
+combatWatcherKnights = boss
+combatUumuu = aerialMiniBoss
+combatNosk = boss
+combatTraitorLord = boss .& (fullShadowDash .| quake .& proficientCombat)
+combatGrimm = boss
+combatCollector = boss
+combatHiveKnight = boss
+combatPaleLurker = boss
+
+combatElderHu, combatXero, combatGorb, combatMarmu, combatNoEyes, combatGalien, combatMarkoth, combatFailedChampion, combatSoulTyrant, combatLostKin, combatWhiteDefender, combatGreyPrinceZote :: Logic
+combatElderHu = aerialMiniBoss
+combatXero = aerialMiniBoss
+combatGorb = aerialMiniBoss
+combatMarmu = aerialMiniBoss
+combatNoEyes = aerialMiniBoss
+combatGalien = aerialMiniBoss
+combatMarkoth = aerialMiniBoss
+combatFailedChampion = boss
+combatSoulTyrant = boss
+combatLostKin = boss
+combatWhiteDefender = boss
+combatGreyPrinceZote = boss
+
+combatColosseum1, combatColosseum2, combatWestQueensGardensArena, combatKingsStationArena, combatWhitePalaceArenas, combatPathOfPainArena, combatRightDevout, combatLeftDevout, combatAnyDevout :: Logic
+combatColosseum1 = boss .& (focus .| spicyCombatSkips)
+combatColosseum2 = boss .& (focus .| spicyCombatSkips)
+combatWestQueensGardensArena = miniBoss
+combatKingsStationArena = miniBoss
+combatWhitePalaceArenas = miniBoss
+combatPathOfPainArena = boss
+combatRightDevout = rightSlash .| rightShadowDash .| leftDash
+combatLeftDevout = leftSlash .| leftShadowDash .| rightDash
+combatAnyDevout = (leftSlash .| leftShadowDash .| rightDash) .& (rightSlash .| rightShadowDash .| leftDash)
+
+
 -- settings
+
 itemRando, mapAreaRando, fullAreaRando, roomRando, preciseMovement, proficientCombat, backgroundPogos, enemyPogos, obscureSkips, shadeSkips, infectionSkips, fireballSkips, spikeTunnels, acidSkips, damageBoosts, dangerousSkips, darkRooms, complexSkips, difficultSkips, slopeballSkips, shriekPogoSkips, randomNail, cursed, randomFocus, cursedMasks, cursedNotches, randomElevators :: Logic
 itemRando = has ITEMRANDO
 mapAreaRando = has MAPAREARANDO
@@ -670,11 +774,11 @@ instance Show Spellcast where
         let beforeStr = "before:" ++ show (before spellcast)
         let afterStr = "after:" ++ show (after spellcast)
         let res = []
-        let res1 = if (not $ casts spellcast == [1]) then castsStr : res else res
-        let res2 = if (not $ canLeftStall spellcast) then canLeftStallStr : res1 else res1
+        let res1 = if (not $ after spellcast == NONE) then afterStr : res else res
+        let res2 = if (not $ before spellcast == NONE) then beforeStr : res1 else res1
         let res3 = if (not $ canRightStall spellcast) then canRightStallStr : res2 else res2
-        let res4 = if (not $ before spellcast == NONE) then beforeStr : res3 else res3
-        let res5 = if (not $ after spellcast == NONE) then afterStr : res4 else res4
+        let res4 = if (not $ canLeftStall spellcast) then canLeftStallStr : res3 else res3
+        let res5 = if (not $ casts spellcast == [1]) then castsStr : res4 else res4
         if null res5 then [] else "[" ++ List.intercalate "," res5 ++ "]"
 
 -- how far away a soul source is and which transition randomizer types could disable it
