@@ -791,8 +791,8 @@ data NearbySoul = NONE | ITEMSOUL | MAPAREASOUL | AREASOUL | ROOMSOUL
     deriving (Eq, Show)
 
 -- default state
-options :: Spellcast
-options = Spellcast {
+defaultCast :: Spellcast
+defaultCast = Spellcast {
     casts = [1],
     canLeftStall = True,
     canRightStall = True,
@@ -800,6 +800,15 @@ options = Spellcast {
     after = NONE
 }
 
+-- custom cast amounts
+cast :: Int -> Spellcast
+cast c = defaultCast { casts = [c] }
+
+castSequence :: [Int] -> Spellcast
+castSequence cs = defaultCast { casts = cs }
+
+
+-- generic spellcast state modifier
 castSpell :: Spellcast -> Logic
 castSpell spellcast = stateModifier
     ("CASTSPELL" ++ show spellcast)

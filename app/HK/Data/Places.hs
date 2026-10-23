@@ -52,9 +52,9 @@ places = [
          .| leftSuperdash .& fullClaw
          .| leftSuperdash .& rightClaw .& wings
          .| rightSuperdash .& leftClaw .& wings
-         .| acid .& shriekPogo options{casts=[3], before=ROOMSOUL}
-         .| leftDash .& anyClaw .& acidSkips .& shriekPogo options{casts=[2], before=ROOMSOUL}
-         .| leftDash .& acidSkips .& complexSkips .& shriekPogo options{casts=[5]}
+         .| acid .& shriekPogo(cast 3){before=ROOMSOUL}
+         .| leftDash .& anyClaw .& acidSkips .& shriekPogo(cast 2){before=ROOMSOUL}
+         .| leftDash .& acidSkips .& complexSkips .& shriekPogo(cast 5)
         -- .| fullClaw .& wings .& fullSharpShadow .& fireball .& fireballSkips .& acidSkips .& complexSkips
         )
     ,
@@ -67,13 +67,13 @@ places = [
             )
          .| (
                 fullClaw
-             .| enemyPogos .& shriekPogo options{casts=[2], before=ROOMSOUL} .& shriekPogo options{casts=[2], before=ROOMSOUL} .& shriekPogo options{casts=[3], before=ROOMSOUL}
+             .| enemyPogos .& shriekPogo(cast 2){before=ROOMSOUL} .& shriekPogo(cast 2){before=ROOMSOUL} .& shriekPogo(cast 3){before=ROOMSOUL}
             ) .& (
                 herrah .& combatLeftDevout
              .| combatAnyDevout
             )
         )
-     .| has Bench_Beast's_Den .& shriekPogo options{casts=[1,2,2]} .& shriekPogo options{casts=[3], before=ROOMSOUL} .& (
+     .| has Bench_Beast's_Den .& shriekPogo(castSequence [1,2,2]) .& shriekPogo(cast 3){before=ROOMSOUL} .& (
             herrah
          .| combatLeftDevout
         )
@@ -87,7 +87,7 @@ places = [
              .| obscureSkips .& difficultSkips
             )
          .| wings .& obscureSkips
-         .| shriekPogo options{casts=[2]}
+         .| shriekPogo(cast 2)
         )
     ,
 
