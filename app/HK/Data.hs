@@ -575,12 +575,15 @@ data VID = SPENTSOUL | SPENTRESERVESOUL
 
 
 -- items
-dreamer, lurien, monomon, herrah, worldSense, leftDash, leftDash_2, rightDash, rightDash_2, leftClaw, rightClaw, leftSuperdash, rightSuperdash, wings, acid, dreamNail, dreamNail_2, dreamNail_3, spells, fireball, fireball_2, quake, quake_2, scream, scream_2, cycloneSlash, dashSlash, greatSlash, focus :: Logic
+dreamer, dreamer_3, lurien, monomon, herrah, worldSense :: Logic
 dreamer = has DREAMER
+dreamer_3 = hasAmount 3 DREAMER
 lurien = has LURIEN
 monomon = has MONOMON
 herrah = has HERRAH
 worldSense = has WORLDSENSE
+
+leftDash, leftDash_2, rightDash, rightDash_2, leftClaw, rightClaw, leftSuperdash, rightSuperdash, wings, acid, dreamNail, dreamNail_2, dreamNail_3, spells, fireball, fireball_2, quake, quake_2, scream, scream_2, cycloneSlash, dashSlash, greatSlash, focus :: Logic
 leftDash = has LEFTDASH
 leftDash_2 = hasAmount 2 LEFTDASH .| hasAmount 2 RIGHTDASH .& leftDash
 rightDash = has RIGHTDASH
@@ -670,11 +673,17 @@ instance Show Spellcast where
         let res1 = if (not $ casts spellcast == [1]) then castsStr : res else res
         let res2 = if (not $ canLeftStall spellcast) then canLeftStallStr : res1 else res1
         let res3 = if (not $ canRightStall spellcast) then canRightStallStr : res2 else res2
-        let res4 = if (not $ before spellcast == None) then beforeStr : res3 else res3
-        let res5 = if (not $ after spellcast == None) then afterStr : res4 else res4
+        let res4 = if (not $ before spellcast == NONE) then beforeStr : res3 else res3
+        let res5 = if (not $ after spellcast == NONE) then afterStr : res4 else res4
         if null res5 then [] else "[" ++ List.intercalate "," res5 ++ "]"
 
-data NearbySoul = None | ItemSoul | MapAreaSoul | AreaSoul | RoomSoul
+-- how far away a soul source is and which transition randomizer types could disable it
+-- ROOMSOUL: same room, unaffected by transition randomizers
+-- AREASOUL: different room but same area, only affected by room rando
+-- MAPAREASOUL: different area but same map area, affected by room and area rando
+-- ITEMSOUL: different map area, affected by all transition randomizers (aka only applies on pure item rando)
+-- NONE: no soul source
+data NearbySoul = NONE | ITEMSOUL | MAPAREASOUL | AREASOUL | ROOMSOUL
     deriving (Eq, Show)
 
 -- default state
@@ -683,8 +692,8 @@ options = Spellcast {
     casts = [1],
     canLeftStall = True,
     canRightStall = True,
-    before = None,
-    after = None
+    before = NONE,
+    after = NONE
 }
 
 castSpell :: Spellcast -> Logic
@@ -692,8 +701,8 @@ castSpell spellcast = stateModifier
     ("CASTSPELL" ++ show spellcast)
     [VESSELFRAGMENTS]
     (\state inventory -> do
-        let restoreBefore = case before spellcast of None -> False; _ -> True
-        let restoreAfter = case after spellcast of None -> False; _ -> True
+        let restoreBefore = case before spellcast of NONE -> False; _ -> True
+        let restoreAfter = case after spellcast of NONE -> False; _ -> True
         let vessels = lookupItem (term VESSELFRAGMENTS) inventory `div` 4
         let maxSoul = 99 :: Int
         let maxReserveSoul = vessels * 33
@@ -718,7 +727,10 @@ performSequence (castGroup:rest) soul reserveSoul = do
     let cost = castGroup * 33
     let refill = min cost reserveSoul
     if cost <= soul
-        then performSequence rest (soul - cost + refill) (reserveSoul - refill)
+        then do
+        let soul' = soul - cost + refill
+        let reserveSoul' = reserveSoul - refill    
+        performSequence rest soul' reserveSoul'
     else
         (False, soul, reserveSoul)
 
