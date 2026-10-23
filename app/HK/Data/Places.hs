@@ -6,82 +6,61 @@ import HK.Data
 places :: [Location]
 places = [
 
-    multiPlace Start [
-        item FOCUS, item SWIM, item LEFTSLASH, item RIGHTSLASH, item UPSLASH, item DOWNSLASH
-    ] $
+    place Start $
         Always
     ,
     
-    multiPlace Sly [
-        item GATHERINGSWARM, item STALWARTSHELL, item LANTERN, item SIMPLE,
-        item MASKSHARDS, item MASKSHARDS, item VESSELFRAGMENTS, item RANCIDEGGS
-    ] $
+    place Sly $
         has Room_shop_left1 .& has Rescued_Sly
     ,
 
-    multiPlace Sly_Key [
-        item HEAVYBLOW, item SPRINTMASTER, item ELEGANT,
-        item MASKSHARDS, item MASKSHARDS, item VESSELFRAGMENTS
-    ] $
+    place Sly_Key $
         has Room_shop_left1 .& has Rescued_Sly .& shopKey
     ,
 
-    multiPlace Iselda [
-        item WAYWARDCOMPASS, item QUILL
-    ] $
+    place Iselda $
         has Room_mapper_left1
     ,
 
     -- todo charm costs for notches
-    multiPlace Salubra [
-        item LIFEBLOODHEART, item LONGNAIL, item STEADYBODY, item SHAMANSTONE, item QUICKFOCUS,
-        item NOTCHES, item NOTCHES, item NOTCHES, item NOTCHES, item SALUBRASBLESSING
-    ] $
+    place Salubra $
         has Room_Charm_Shop_left1
     ,
 
-    multiPlace Leg_Eater [
-        item FRAGILEHEART, item FRAGILEGREED, item FRAGILESTRENGTH
-    ] $
+    place Leg_Eater $
         has Fungus2_26_left1
     ,
 
     -- todo grub costs
-    multiPlace Grubfather [
-        item GRUBSONG, item GRUBBERFLYSELEGY, item MASKSHARDS, item PALEORE, item RANCIDEGGS,
-        item HALLOWNESTSEALS, item KINGSIDOLS
-    ] $
+    place Grubfather $
         has Crossroads_38_right1
     ,
 
     -- todo essence costs
-    multiPlace Seer [
-        item DREAMNAIL, item DREAMNAIL, item DREAMWIELDER,
-        item MASKSHARDS, item VESSELFRAGMENTS, item PALEORE, item HALLOWNESTSEALS, item ARCANEEGGS
-    ] $
+    place Seer $
         has RestingGrounds_07_right1
     ,
 
-    place Descending_Dark (item QUAKE) $
+    place Descending_Dark $
         has Mines_35_left1 .& has Broke_Crystallized_Mound_Quake_Floor .& (
             leftClaw
-        .| rightClaw .& preciseMovement .& (
+         .| rightClaw .& preciseMovement .& (
                 rightDash
-            .| obscureSkips .& difficultSkips
+             .| obscureSkips .& difficultSkips
             )
-        .| wings .& obscureSkips
-        .| shriekPogo options{casts = [2]}
+         .| wings .& obscureSkips
+         .| shriekPogo options{casts = [2]}
         )
     ,
 
-    place Grub_Crystallized_Mound (item GRUBS) $
+    place Grub_Crystallized_Mound $
         has Mines_35_left1 .& has Broke_Crystallized_Mound_Quake_Floor .& (
             leftClaw
-        .| rightClaw .& preciseMovement .& (
+         .| rightClaw .& preciseMovement .& (
                 rightDash
-            .| obscureSkips
+             .| obscureSkips
             )
-        .| wings
+         .| wings
         )
 
     ]

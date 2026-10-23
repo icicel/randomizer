@@ -8,13 +8,13 @@ import HK.World
 import HK.Data
 
 getTerm :: Location -> Maybe Term
-getTerm (Place _ _ _) = Nothing
+getTerm (Place _ _) = Nothing
 getTerm (Event t _) = Just t
 getTerm (Waypoint t _) = Just t
 getTerm (Transition t _ _) = Just t
 
 getName :: Location -> Maybe Name
-getName (Place n _ _) = Just n
+getName (Place n _) = Just n
 getName _ = Nothing
 
 findLocation :: TermID t => t -> Location

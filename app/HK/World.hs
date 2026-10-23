@@ -15,3 +15,4 @@ hollowKnight = createWorld
     Tutorial_01_right1
     Map.empty
     (events ++ places ++ transitions ++ waypoints)
+    []

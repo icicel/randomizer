@@ -10,19 +10,30 @@ import Logic
 type Randomizer = MState.State World
 
 sane :: World -> Bool
-sane world = saneTerms world && saneTransitions world
+sane world = saneTerms world && saneNames world && saneTransitions world
 
--- no duplicate terms
+-- no duplicate location terms
 saneTerms :: World -> Bool
 saneTerms world = do
     let uniqueTerms = removeDuplicates terms
     length terms == length uniqueTerms
     where
         terms = foldr (\loc ts -> case loc of
-                Place _ _ _ -> ts
                 Event t _ -> t:ts
                 Waypoint t _ -> t:ts
                 Transition t _ _ -> t:ts
+                _ -> ts
+            ) [] (locations world)
+
+-- no duplicate place names
+saneNames :: World -> Bool
+saneNames world = do
+    let uniqueNames = removeDuplicates names
+    length names == length uniqueNames
+    where
+        names = foldr (\loc ns -> case loc of
+                Place n _ -> n:ns
+                _ -> ns
             ) [] (locations world)
 
 removeDuplicates :: (Eq a) => [a] -> [a]

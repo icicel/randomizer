@@ -43,25 +43,37 @@ var v = Label (fromEnum v) (show v)
 data World = World {
     startTerm :: Term,
     startState :: State,
-    locations :: [Location]
+    locations :: [Location],
+    items :: [Item]
 }
 
-createWorld :: TermID t => t -> State -> [Location] -> World
-createWorld t st locs = World (term t) st locs
+createWorld :: TermID t => t -> State -> [Location] -> [Item] -> World
+createWorld t = World (term t)
 
 
 
-newtype Item = Item (Term, Int)
+data Item = Item {
+    itemTerm :: Term,
+    placements :: [Placement],
+    collectorTerm :: Maybe (Term, Int)
+}
 
-instance Show Item where
-    show (Item (t, 1)) = show t
-    show (Item (t, n)) = show t ++ "*" ++ show n
+type Placement = (Name, Int)
 
-item :: TermID t => t -> Item
-item a = Item (term a, 1)
+definePlacements :: NameID n => [(n, Int)] -> [Placement]
+definePlacements = map (\(n, c) -> (name n, c))
 
-items :: TermID t => t -> Int -> Item
-items a n = Item (term a, n)
+-- simple item
+item :: (TermID t, NameID n) => t -> [(n, Int)] -> Item
+item t places = Item (term t) (definePlacements places) Nothing
+
+-- item with a collector term, incremented when the item term is first collected
+collectedItem :: (TermID t, NameID n, TermID c) => t -> [(n, Int)] -> c -> Item
+collectedItem t places c = Item (term t) (definePlacements places) (Just (term c, 1))
+
+-- item with a collector term, incremented when n of the item term have been collected
+multipartCollectedItem :: (TermID t, NameID n, TermID c) => t -> [(n, Int)] -> c -> Int -> Item
+multipartCollectedItem t places c n = Item (term t) (definePlacements places) (Just (term c, n))
 
 type Inventory = Map.Map Term Int
 
@@ -118,13 +130,13 @@ lookupProgress = Map.findWithDefault nothing
 
 
 data Location =
-    Place Name [Item] Logic |
+    Place Name Logic |
     Event Term Logic |
     Waypoint Term Logic |
     Transition Term Term Logic
 
 instance Show Location where
-    show (Place n _ _) = show n
+    show (Place n _) = show n
     show (Event t _) = show t
     show (Waypoint t _) = show t
     show (Transition from to _) = show from ++ "->" ++ show to
@@ -132,10 +144,8 @@ instance Show Location where
 -- a terminal location with one or more randomized items
 -- the only location type where two different locations may give the same term, so uses a
 --  name instead of a term for identification
-place :: NameID n => n -> Item -> Logic -> Location
-place n i = multiPlace n [i]
-multiPlace :: NameID n => n -> [Item] -> Logic -> Location
-multiPlace = Place . name
+place :: NameID n => n -> Logic -> Location
+place = Place . name
 
 -- a terminal location with a static term
 event :: TermID t => t -> Logic -> Location
@@ -152,7 +162,7 @@ transition :: TermID t => t -> t -> Logic -> Location
 transition from to = Transition (term from) (term to)
 
 logic :: Location -> Logic
-logic (Place _ _ lg) = lg
+logic (Place _ lg) = lg
 logic (Event _ lg) = lg
 logic (Waypoint _ lg) = lg
 logic (Transition _ _ lg) = lg
