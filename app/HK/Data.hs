@@ -342,7 +342,7 @@ data TID =
     | White_Palace_15_right2 | White_Palace_16_left1 | White_Palace_16_left2
     | White_Palace_17_right1 | White_Palace_17_bot1 | White_Palace_18_top1 | White_Palace_18_right1
     | White_Palace_19_top1 | White_Palace_19_left1 | White_Palace_20_bot1
-    deriving (Show, Enum)
+    deriving (Show, Eq, Enum)
 
 instance NameID NID
 data NID =
@@ -631,7 +631,7 @@ fullDash = leftDash .& rightDash
 anySuperdash = leftSuperdash .| rightSuperdash
 fullSuperdash = leftSuperdash .& rightSuperdash
 
-leftShadowDash, rightShadowDash, anyShadowDash, fullShadowDash, leftDashSlash, rightDashSlash, anyDashSlash, fullDashSlash :: Logic
+leftShadowDash, rightShadowDash, anyShadowDash, fullShadowDash, leftDashSlash, rightDashSlash, anyDashSlash, fullDashSlash, leftSharpShadow, rightSharpShadow, anySharpShadow, fullSharpShadow :: Logic
 leftShadowDash = hasAmount 2 LEFTDASH .| hasAmount 2 RIGHTDASH .& leftDash
 rightShadowDash = hasAmount 2 RIGHTDASH .| hasAmount 2 LEFTDASH .& rightDash
 anyShadowDash = leftShadowDash .| rightShadowDash
@@ -640,6 +640,10 @@ leftDashSlash = dashSlash .& leftDash
 rightDashSlash = dashSlash .& rightDash
 anyDashSlash = leftDashSlash .| rightDashSlash
 fullDashSlash = leftDashSlash .& rightDashSlash
+leftSharpShadow = leftShadowDash .& equippedCharm SHARPSHADOW
+rightSharpShadow = rightShadowDash .& equippedCharm SHARPSHADOW
+anySharpShadow = leftSharpShadow .| rightSharpShadow
+fullSharpShadow = leftSharpShadow .& rightSharpShadow
 
 sideSlash :: Logic
 sideSlash = leftSlash .| rightSlash
@@ -664,8 +668,10 @@ aerialMiniBoss =
  .| mildCombatSkips .& (fireball .| scream) .& (sideSlash .| upSlash)
  .| spicyCombatSkips .& (sideSlash .| upSlash .| cycloneSlash .| greatSlash)
 boss =
-    spells_2 .& (anyDash .& (sideSlash .| upSlash)
- .| mildCombatSkips .& nailCombat)
+    spells_2 .& (
+        anyDash .& (sideSlash .| upSlash)
+     .| mildCombatSkips .& nailCombat
+    )
 bossFluke =
     fireball_2
  .| scream_2
@@ -807,7 +813,6 @@ cast c = defaultCast { casts = [c] }
 castSequence :: [Int] -> Spellcast
 castSequence cs = defaultCast { casts = cs }
 
-
 -- generic spellcast state modifier
 castSpell :: Spellcast -> Logic
 castSpell spellcast = stateModifier
@@ -839,8 +844,7 @@ performSequence [] soul reserveSoul = (True, soul, reserveSoul)
 performSequence (castGroup:rest) soul reserveSoul = do
     let cost = castGroup * 33
     let refill = min cost reserveSoul
-    if cost <= soul
-        then do
+    if cost <= soul then do
         let soul' = soul - cost + refill
         let reserveSoul' = reserveSoul - refill    
         performSequence rest soul' reserveSoul'
@@ -862,3 +866,39 @@ shriekPogo spellcast = do
 
 slopeball :: Spellcast -> Logic
 slopeball spellcast = slopeballSkips .& fireball .& castSpell spellcast
+
+
+-- charm state modifiers
+
+notchCost :: TID -> Int
+notchCost charm = case charm of
+    WAYWARDCOMPASS -> 1; GATHERINGSWARM -> 1; SPRINTMASTER -> 1; GRUBSONG -> 1; STEADYBODY -> 1
+    THORNSOFAGONY -> 1; DEFENDERSCREST -> 1; SPORESHROOM -> 1; NAILMASTERSGLORY -> 1; DREAMWIELDER -> 1
+    STALWARTSHELL -> 2; SOULCATCHER -> 2; DASHMASTER -> 2; FRAGILEHEART -> 2; FRAGILEGREED -> 2
+    SPELLTWISTER -> 2; HEAVYBLOW -> 2; LONGNAIL -> 2; FURYOFTHEFALLEN -> 2; BALDURSHELL -> 2
+    GLOWINGWOMB -> 2; LIFEBLOODHEART -> 2; SHARPSHADOW -> 2; SHAPEOFUNN -> 2; WEAVERSONG -> 2; GRIMMCHILD -> 2
+    SHAMANSTONE -> 3; GRUBBERFLYSELEGY -> 3; FRAGILESTRENGTH -> 3; QUICKSLASH -> 3
+    MARKOFPRIDE -> 3; FLUKENEST -> 3; QUICKFOCUS -> 3; LIFEBLOODCORE -> 3; DREAMSHIELD -> 3
+    SOULEATER -> 4; DEEPFOCUS -> 4; JONISBLESSING -> 4; HIVEBLOOD -> 4
+    WHITEFRAGMENT -> 5
+    _ -> error $ "notchCost: not a charm: " ++ show charm
+
+equippedCharm :: TID -> Logic
+equippedCharm charm = stateModifier
+    ("EQUIPPEDCHARM[" ++ show charm ++ "]")
+    [charm, NOTCHES]
+    (\state inventory -> do
+        -- todo: more complex logic involving tracking all equipped charms
+        let charmCount = lookupItem (term charm) inventory
+        let notches = lookupItem (term NOTCHES) inventory
+        let hasCharm = if charm == WHITEFRAGMENT
+                then charmCount >= 2
+                else charmCount >= 1
+        let notchesRequired = if charm == WHITEFRAGMENT && charmCount >= 3
+                then 0 -- voidheart
+                else notchCost charm
+        if hasCharm && notches >= notchesRequired then
+            [state]
+        else
+            []
+    )

@@ -55,7 +55,7 @@ places = [
          .| acid .& shriekPogo(cast 3){before=ROOMSOUL}
          .| leftDash .& anyClaw .& acidSkips .& shriekPogo(cast 2){before=ROOMSOUL}
          .| leftDash .& acidSkips .& complexSkips .& shriekPogo(cast 5)
-        -- .| fullClaw .& wings .& fullSharpShadow .& fireball .& fireballSkips .& acidSkips .& complexSkips
+         .| fullClaw .& wings .& fullSharpShadow .& fireball .& fireballSkips .& acidSkips .& complexSkips
         )
     ,
 
