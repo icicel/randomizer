@@ -610,15 +610,19 @@ cycloneSlash = has CYCLONESLASH
 dashSlash = has DASHSLASH
 greatSlash = has GREATSLASH
 
-focus, leftSlash, rightSlash, upSlash, downSlash :: Logic
+focus, leftSlash, rightSlash, upSlash, downSlash, swim :: Logic
 focus = has FOCUS
 leftSlash = has LEFTSLASH
 rightSlash = has RIGHTSLASH
 upSlash = has UPSLASH
 downSlash = has DOWNSLASH
+swim = has SWIM
 
 shopKey :: Logic
 shopKey = has SHOPKEY
+
+essence :: Logic
+essence = has ESSENCE
 
 
 -- item macros
@@ -645,8 +649,15 @@ rightSharpShadow = rightShadowDash .& equippedCharm SHARPSHADOW
 anySharpShadow = leftSharpShadow .| rightSharpShadow
 fullSharpShadow = leftSharpShadow .& rightSharpShadow
 
-sideSlash :: Logic
+dreamGate, sideSlash, infection, awoken :: Logic
+dreamGate = dreamNail_2 .& essence
 sideSlash = leftSlash .| rightSlash
+infection = dreamer
+awoken = dreamNail_3
+
+kingsoul, voidHeart :: Logic
+kingsoul = equippedCharm WHITEFRAGMENT
+voidHeart = equippedCharm WHITEFRAGMENT .& hasAmount 3 WHITEFRAGMENT
 
 
 -- combat macros
@@ -760,6 +771,13 @@ randomFocus = has RANDOMFOCUS
 cursedMasks = has CURSEDMASKS
 cursedNotches = has CURSEDNOTCHES
 randomElevators = has RANDOMELEVATORS
+
+infected, spellAirstall, leftSkipAcid, rightSkipAcid, fullSkipAcid :: Logic
+infected = infectionSkips .& infection
+spellAirstall = fireballSkips .& (fireball .| scream)
+leftSkipAcid = fullClaw .& fullDash .& leftSuperdash .& acidSkips
+rightSkipAcid = fullClaw .& fullDash .& rightSuperdash .& acidSkips
+fullSkipAcid = leftSkipAcid .& rightSkipAcid
 
 
 -- spellcasting state modifiers

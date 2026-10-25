@@ -12,10 +12,44 @@ allItems = [
     ,
     itemType HERRAH DREAMER $ at Herrah
     ,
-
-    item DREAMNAIL $ atMany [
-        Seer, Seer
+    item WORLDSENSE $ at World_Sense
+    ,
+    item LEFTDASH $ atMany [
+        Mothwing_Cloak, Shade_Cloak
     ],
+    item RIGHTDASH $ atMany [
+        Mothwing_Cloak, Shade_Cloak
+    ],
+    item LEFTCLAW $ at Mantis_Claw
+    ,
+    item RIGHTCLAW $ at Mantis_Claw
+    ,
+    item LEFTSUPERDASH $ at Crystal_Heart
+    ,
+    item RIGHTSUPERDASH $ at Crystal_Heart
+    ,
+    item WINGS $ at Monarch_Wings
+    ,
+    item ACID $ at Isma's_Tear
+    ,
+    item DREAMNAIL $ atMany [
+        Seer, Seer, Dream_Nail
+    ],
+    itemType FIREBALL SPELLS $ atMany [
+        Vengeful_Spirit, Shade_Soul
+    ],
+    itemType QUAKE SPELLS $ atMany [
+        Desolate_Dive, Descending_Dark
+    ],
+    itemType SCREAM SPELLS $ atMany [
+        Howling_Wraiths, Abyss_Shriek
+    ],
+    item CYCLONESLASH $ at Cyclone_Slash
+    ,
+    item DASHSLASH $ at Dash_Slash
+    ,
+    item GREATSLASH $ at Great_Slash
+    ,
 
     itemType GATHERINGSWARM CHARMS $ at Sly
     ,
