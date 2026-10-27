@@ -109,23 +109,24 @@ nothing = Stateset []
 single :: State -> Stateset
 single st = Stateset [st]
 
--- add the state unless it is "strictly less" than all existing states, meaning
---  all its values are equal or lesser than the other states' corresponding values
--- this is a partial ordering (two states could be neither > nor < nor == to each other),
+-- add the state unless an existing state is equal or lesser (<=?), meaning
+--  all its values are equal or lesser than the input state's corresponding values
+-- states form a partial order (two states could be neither > nor < nor == to each other),
 --  so we can't use the existing instance of Ord for Map
--- how it works: `isSubmapOfBy f a b` checks whether all keys of a are in b, and if so,
---  whether all values of a are related by f to the corresponding values in b
--- that means that for states, there are two cases;
--- 1) not all keys of a are in b, in which case strictlyLessThan a b = False
--- 2) all keys of a are in b, in which case strictlyLessThan a b = whether all values
---  in a are <= to the corresponding values in b
 addState :: State -> Stateset -> Stateset
 addState st (Stateset sts) =
-    if all (strictlyLessThan st) sts
+    if any (<=? st) sts
         then Stateset sts
         else Stateset (st:sts)
     where
-        strictlyLessThan = Map.isSubmapOfBy (<=)
+        (<=?) st1 st2 = stateLTE (Map.toAscList st1) (Map.toAscList st2)
+        stateLTE :: [(Variable, Int)] -> [(Variable, Int)] -> Bool
+        stateLTE [] _ = True
+        stateLTE _ [] = False
+        stateLTE ((v1, i1):xs) ((v2, i2):ys)
+            | v1 == v2 = i1 <= i2 && stateLTE xs ys
+            | v1 < v2 = i1 <= 0 && stateLTE xs ((v2, i2):ys) -- v1 not in st2
+            | otherwise = stateLTE ((v1, i1):xs) ys -- v2 not in st1
 
 merge :: Stateset -> Stateset -> Stateset
 merge (Stateset sts) alts = foldr addState alts sts
