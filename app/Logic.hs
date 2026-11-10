@@ -99,7 +99,8 @@ lookupVar :: Variable -> State -> Int
 lookupVar = Map.findWithDefault 0
 
 insertVar :: Variable -> Int -> State -> State
-insertVar = Map.insert
+insertVar v 0 = Map.delete v
+insertVar v i = Map.insert v i
 
 newtype Stateset = Stateset [State]
 
@@ -119,14 +120,14 @@ addState st (Stateset sts) =
         then Stateset sts
         else Stateset (st:sts)
     where
-        (<=?) st1 st2 = stateLTE (Map.toAscList st1) (Map.toAscList st2)
-        stateLTE :: [(Variable, Int)] -> [(Variable, Int)] -> Bool
-        stateLTE [] _ = True
-        stateLTE _ [] = False
-        stateLTE ((v1, i1):xs) ((v2, i2):ys)
-            | v1 == v2 = i1 <= i2 && stateLTE xs ys
-            | v1 < v2 = i1 <= 0 && stateLTE xs ((v2, i2):ys) -- v1 not in st2
-            | otherwise = stateLTE ((v1, i1):xs) ys -- v2 not in st1
+        st1 <=? st2 = listLTE (Map.toAscList st1) (Map.toAscList st2)
+        listLTE :: [(Variable, Int)] -> [(Variable, Int)] -> Bool
+        listLTE [] _ = True
+        listLTE _ [] = False
+        listLTE ((v1, i1):xs) ((v2, i2):ys)
+            | v1 == v2 = i1 <= i2 && listLTE xs ys
+            | v1 < v2 = i1 <= 0 && listLTE xs ((v2, i2):ys) -- v1 not in st2
+            | otherwise = listLTE ((v1, i1):xs) ys -- v2 not in st1
 
 merge :: Stateset -> Stateset -> Stateset
 merge (Stateset sts) alts = foldr addState alts sts
