@@ -92,7 +92,7 @@ places = [
             leftDash
          .| wings
          .| leftSuperdash .& anyClaw
-        --  .| (shadeSkip(hits 2) .| leftClaw) .& enemyPogos
+         .| (shadeSkip(2) .| leftClaw) .& enemyPogos
          .| spellAirstall .& castSpell(castSequence [1,1]){before=ROOMSOUL}
         )
     ,
@@ -113,13 +113,15 @@ places = [
     ,
 
     place Shade_Cloak $
+        -- upper path
         (
             has Abyss_10_left2 .& rightShadowDash
          .| has Abyss_10_left1 .& (
                 rightClaw
-            --  .| wings .& shadeSkip(hits 2)
+             .| wings .& shadeSkip(2)
              .| shriekPogo(cast 2)
             )
+        -- reach statue from above
         ) .& (
             wings
          .| rightSuperdash
@@ -129,9 +131,11 @@ places = [
              .| backgroundPogos
             )
         )
+        -- lower path
      .| (
             has Abyss_10_left2 .& rightShadowDash
          .| has Abyss_10_left1
+        -- pass through void tendrils
         ) .& (
             rightShadowDash
          .| voidHeart .& (
@@ -141,6 +145,7 @@ places = [
              .| wings
              .| fullClaw
             )
+        -- reach statue from below
         ) .& (
             wings
          .| leftClaw .& rightSuperdash

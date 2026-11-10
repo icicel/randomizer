@@ -570,7 +570,15 @@ data NID =
     deriving (Show, Enum)
 
 instance VariableID VID
-data VID = SPENTSOUL | SPENTRESERVESOUL
+data VID =
+    -- soul
+    SPENTSOUL | SPENTRESERVESOUL | REQUIREDMAXSOUL
+
+    -- charms
+    | CHARMWHITEFRAGMENT | NOCHARMWHITEFRAGMENT
+
+    -- misc
+    | USEDSHADE
     deriving (Show, Enum)
 
 
@@ -812,7 +820,15 @@ instance Show Spellcast where
 -- ITEMSOUL: different map area, affected by all transition randomizers (aka only applies on pure item rando)
 -- NONE: no soul source
 data NearbySoul = NONE | ITEMSOUL | MAPAREASOUL | AREASOUL | ROOMSOUL
-    deriving (Eq, Show)
+    deriving (Eq, Ord, Show)
+
+-- the furthest allowed nearbySoul given by the transition randomizer settings
+mode :: Inventory -> NearbySoul
+mode inventory
+    | lookupItem (term ROOMRANDO) inventory >= 1 = ROOMSOUL
+    | lookupItem (term FULLAREARANDO) inventory >= 1 = AREASOUL
+    | lookupItem (term MAPAREARANDO) inventory >= 1 = MAPAREASOUL
+    | otherwise = ITEMSOUL
 
 -- default state
 defaultCast :: Spellcast
@@ -837,37 +853,47 @@ castSpell spellcast = stateModifier
     ("CASTSPELL" ++ show spellcast)
     [VESSELFRAGMENTS]
     (\state inventory -> do
-        let restoreBefore = case before spellcast of NONE -> False; _ -> True
-        let restoreAfter = case after spellcast of NONE -> False; _ -> True
+        let restoreBefore = case before spellcast of NONE -> False; nearbySoul -> nearbySoul >= mode inventory
+        let restoreAfter = case after spellcast of NONE -> False; nearbySoul -> nearbySoul >= mode inventory
         let vessels = lookupItem (term VESSELFRAGMENTS) inventory `div` 4
-        let maxSoul = 99 :: Int
-        let maxReserveSoul = vessels * 33
-        let spentSoul = if restoreBefore then 0 else lookupVar (var SPENTSOUL) state
-        let spentReserveSoul = if restoreBefore then 0 else lookupVar (var SPENTRESERVESOUL) state
-        let soul = maxSoul - spentSoul
-        let reserveSoul = maxReserveSoul - spentReserveSoul
-        let (success, leftSoul, leftReserveSoul) = performSequence (casts spellcast) soul reserveSoul
-        let finalSpentSoul = if restoreAfter then 0 else maxSoul - leftSoul
-        let finalSpentReserveSoul = if restoreAfter then 0 else maxReserveSoul - leftReserveSoul
-        if success then
-            [insertVar (var SPENTSOUL) finalSpentSoul $
-            insertVar (var SPENTRESERVESOUL) finalSpentReserveSoul
-            state]
-        else
-            []
+        let spellCost = 33 :: Int
+        -- todo: spell twister
+        let state' = if restoreBefore then restoreAllSoul state else state
+        case spendSoulSequence state' vessels spellCost (casts spellcast) of
+            Nothing -> []
+            Just state'' -> if restoreAfter then [restoreAllSoul state''] else [state'']
     )
 
-performSequence :: [Int] -> Int -> Int -> (Bool, Int, Int)
-performSequence [] soul reserveSoul = (True, soul, reserveSoul)
-performSequence (castGroup:rest) soul reserveSoul = do
-    let cost = castGroup * 33
-    let refill = min cost reserveSoul
-    if cost <= soul then do
-        let soul' = soul - cost + refill
-        let reserveSoul' = reserveSoul - refill    
-        performSequence rest soul' reserveSoul'
+spendSoul :: State -> Int -> Int -> Maybe State
+spendSoul state vessels amount = do
+    let maxRequiredSoul = lookupVar (var REQUIREDMAXSOUL) state
+    let spentSoul = lookupVar (var SPENTSOUL) state
+    let spentReserveSoul = lookupVar (var SPENTRESERVESOUL) state
+    let maxSoul = 99 :: Int
+    let maxReserveSoul = vessels * 33
+    let initialSpentSoul = spentSoul + amount
+    let refill = min initialSpentSoul (maxReserveSoul - spentReserveSoul)
+    let maxRequiredSoul' = max maxRequiredSoul initialSpentSoul
+    let spentSoul' = initialSpentSoul - refill
+    let spentReserveSoul' = spentReserveSoul + refill
+    if maxSoul < initialSpentSoul then
+        Nothing
     else
-        (False, soul, reserveSoul)
+        Just $ insertVar (var SPENTSOUL) spentSoul' $
+                insertVar (var SPENTRESERVESOUL) spentReserveSoul' $
+                insertVar (var REQUIREDMAXSOUL) maxRequiredSoul' state
+
+spendSoulSequence :: State -> Int -> Int -> [Int] -> Maybe State
+spendSoulSequence state _ _ [] = Just state
+spendSoulSequence state vessels amount (castGroup:rest) =
+    case spendSoul state vessels (castGroup * 33) of
+        Nothing -> Nothing
+        Just newState -> spendSoulSequence newState vessels amount rest
+
+restoreAllSoul :: State -> State
+restoreAllSoul state =
+    insertVar (var SPENTSOUL) 0 $
+        insertVar (var SPENTRESERVESOUL) 0 state
 
 shriekPogo :: Spellcast -> Logic
 shriekPogo spellcast = do
@@ -919,4 +945,24 @@ equippedCharm charm = stateModifier
             [state]
         else
             []
+    )
+
+
+-- shade skip
+
+shadeSkip :: Int -> Logic
+shadeSkip hits = shadeSkips .& stateModifier
+    ("SHADESKIP" ++ if hits == 1 then "" else "[" ++ show hits ++ "HITS]")
+    (if hits == 1 then [SHADESKIPS] else [SHADESKIPS, MASKSHARDS])
+    (\state _ -> do
+        let voidheartEquipped = lookupVar (var CHARMWHITEFRAGMENT) state == 1
+        let maxRequiredSoul = lookupVar (var REQUIREDMAXSOUL) state
+        let requiresMoreThanCap = maxRequiredSoul > (99 - 33)
+        -- todo: health/flower logic
+        if voidheartEquipped || requiresMoreThanCap then
+            []
+        else
+            [insertVar (var NOCHARMWHITEFRAGMENT) 1 $
+            insertVar (var USEDSHADE) 1
+            state]
     )
