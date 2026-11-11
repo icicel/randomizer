@@ -16,7 +16,7 @@ data TID =
     -- main progression items
     | DREAMER | LURIEN | MONOMON | HERRAH | WORLDSENSE | LEFTDASH | RIGHTDASH | LEFTCLAW
     | RIGHTCLAW | LEFTSUPERDASH | RIGHTSUPERDASH | WINGS | ACID | DREAMNAIL | FIREBALL | SPELLS
-    | QUAKE | SCREAM | CYCLONESLASH | DASHSLASH | GREATSLASH | FOCUS
+    | QUAKE | SCREAM | CYCLONESLASH | DASHSLASH | GREATSLASH
 
     -- charms
     | GATHERINGSWARM | WAYWARDCOMPASS | GRUBSONG | STALWARTSHELL | BALDURSHELL
@@ -48,7 +48,10 @@ data TID =
     | WANDERERSJOURNALS | HALLOWNESTSEALS | KINGSIDOLS | ARCANEEGGS | MAPS | STAGS | FLAMES
 
     -- randomizer custom items
-    | ELEVATORPASS | LEFTSLASH | RIGHTSLASH | UPSLASH | DOWNSLASH | SWIM
+    | ELEVATORPASS | LEFTSLASH | RIGHTSLASH | UPSLASH | DOWNSLASH | SWIM | FOCUS
+    
+    -- non-items
+    | MIMIC | LUMAFLY | LIFEBLOODCOCOONSMALL | LIFEBLOODCOCOONLARGE | JOURNALENTRY
 
     -- waypoints/events
     | Start_State | Can_Replenish_Geo | Can_Replenish_Geo_Crossroads | Rescued_Sly | Rescued_Bretta
@@ -576,10 +579,17 @@ data VID =
 
     -- charms
     | USEDNOTCHES
-    | CHARMSPELLTWISTER | NOCHARMSPELLTWISTER
+    | CHARMDEFENDERSCREST | NOCHARMDEFENDERSCREST
+    | CHARMSHARPSHADOW | NOCHARMSHARPSHADOW
+    | CHARMGLOWINGWOMB | NOCHARMGLOWINGWOMB
     | CHARMFRAGILEHEART | NOCHARMFRAGILEHEART
     | CHARMFRAGILEGREED | NOCHARMFRAGILEGREED
     | CHARMFRAGILESTRENGTH | NOCHARMFRAGILESTRENGTH
+    | CHARMDASHMASTER | NOCHARMDASHMASTER
+    | CHARMSPRINTMASTER | NOCHARMSPRINTMASTER
+    | CHARMSPELLTWISTER | NOCHARMSPELLTWISTER
+    | CHARMGRUBBERFLYSELEGY | NOCHARMGRUBBERFLYSELEGY
+    | CHARMGRIMMCHILD | NOCHARMGRIMMCHILD
     | CHARMWHITEFRAGMENT | NOCHARMWHITEFRAGMENT
 
     -- health
@@ -623,19 +633,41 @@ cycloneSlash = has CYCLONESLASH
 dashSlash = has DASHSLASH
 greatSlash = has GREATSLASH
 
-focus, leftSlash, rightSlash, upSlash, downSlash, swim :: Logic
-focus = has FOCUS
+leftSlash, rightSlash, upSlash, downSlash, swim, focus :: Logic
 leftSlash = has LEFTSLASH
 rightSlash = has RIGHTSLASH
 upSlash = has UPSLASH
 downSlash = has DOWNSLASH
 swim = has SWIM
+focus = has FOCUS
 
-shopKey :: Logic
+lantern, shopKey :: Logic
+lantern = has LANTERN
 shopKey = has SHOPKEY
+
+simple4, waterwaysUnlock, pleasureHouseUnlock, godTunerUnlock, jijiUnlock :: Logic
+simple4 = hasAmount 4 SIMPLE
+waterwaysUnlock = simple4
+pleasureHouseUnlock = simple4
+godTunerUnlock = simple4
+jijiUnlock = simple4
 
 essence :: Logic
 essence = has ESSENCE
+
+dirtmouthStag, crossroadsStag, greenpathStag, queensStationStag, queensGardensStag, cityStoreroomsStag, kingsStationStag, restingGroundsStag, distantVillageStag, hiddenStationStag, stagNestStag, allStags :: Logic
+dirtmouthStag = has DIRTMOUTHSTAG
+crossroadsStag = has CROSSROADSSTAG
+greenpathStag = has GREENPATHSTAG
+queensStationStag = has QUEENSSTATIONSTAG
+queensGardensStag = has QUEENSGARDENSSTAG
+cityStoreroomsStag = has CITYSTOREROOMSSTAG
+kingsStationStag = has KINGSSTATIONSTAG
+restingGroundsStag = has RESTINGGROUNDSSTAG
+distantVillageStag = has DISTANTVILLAGESTAG
+hiddenStationStag = has HIDDENSTATIONSTAG
+stagNestStag = has STAGNESTSTAG
+allStags = hasAmount 9 STAGS
 
 
 -- item macros
@@ -657,8 +689,8 @@ leftDashSlash = dashSlash .& leftDash
 rightDashSlash = dashSlash .& rightDash
 anyDashSlash = leftDashSlash .| rightDashSlash
 fullDashSlash = leftDashSlash .& rightDashSlash
-leftSharpShadow = leftShadowDash .& equippedCharm SHARPSHADOW
-rightSharpShadow = rightShadowDash .& equippedCharm SHARPSHADOW
+leftSharpShadow = leftShadowDash .& sharpShadow
+rightSharpShadow = rightShadowDash .& sharpShadow
 anySharpShadow = leftSharpShadow .| rightSharpShadow
 fullSharpShadow = leftSharpShadow .& rightSharpShadow
 
@@ -668,12 +700,21 @@ sideSlash = leftSlash .| rightSlash
 infection = dreamer
 awoken = dreamNail_3
 
-kingsoul, voidHeart, fragileHeart, fragileGreed, fragileStrength :: Logic
-kingsoul = equippedCharm WHITEFRAGMENT
-voidHeart = equippedCharm WHITEFRAGMENT .& hasAmount 3 WHITEFRAGMENT
+defendersCrest, sharpShadow, glowingWomb, fragileHeart, fragileGreed, fragileStrength, dashMaster, sprintMaster, dashSprint, spellTwister, grubberflysElegy, grimmchild, kingsoul, voidHeart :: Logic
+defendersCrest = equippedCharm DEFENDERSCREST
+sharpShadow = equippedCharm SHARPSHADOW
+glowingWomb = equippedCharm GLOWINGWOMB
 fragileHeart = equippedCharm FRAGILEHEART
 fragileGreed = equippedCharm FRAGILEGREED
 fragileStrength = equippedCharm FRAGILESTRENGTH
+dashMaster = equippedCharm DASHMASTER
+sprintMaster = equippedCharm SPRINTMASTER
+dashSprint = dashMaster .& sprintMaster
+spellTwister = equippedCharm SPELLTWISTER
+grubberflysElegy = equippedCharm GRUBBERFLYSELEGY
+grimmchild = equippedCharm GRIMMCHILD
+kingsoul = equippedCharm WHITEFRAGMENT
+voidHeart = equippedCharm WHITEFRAGMENT .& hasAmount 3 WHITEFRAGMENT
 
 
 -- combat macros
@@ -947,10 +988,17 @@ notchCost charm count = case charm of
 
 charmVariables :: TID -> (VID, VID)
 charmVariables charm = case charm of
-    SPELLTWISTER -> (CHARMSPELLTWISTER, NOCHARMSPELLTWISTER)
+    DEFENDERSCREST -> (CHARMDEFENDERSCREST, NOCHARMDEFENDERSCREST)
+    SHARPSHADOW -> (CHARMSHARPSHADOW, NOCHARMSHARPSHADOW)
+    GLOWINGWOMB -> (CHARMGLOWINGWOMB, NOCHARMGLOWINGWOMB)
     FRAGILEHEART -> (CHARMFRAGILEHEART, NOCHARMFRAGILEHEART)
     FRAGILEGREED -> (CHARMFRAGILEGREED, NOCHARMFRAGILEGREED)
     FRAGILESTRENGTH -> (CHARMFRAGILESTRENGTH, NOCHARMFRAGILESTRENGTH)
+    DASHMASTER -> (CHARMDASHMASTER, NOCHARMDASHMASTER)
+    SPRINTMASTER -> (CHARMSPRINTMASTER, NOCHARMSPRINTMASTER)
+    SPELLTWISTER -> (CHARMSPELLTWISTER, NOCHARMSPELLTWISTER)
+    GRUBBERFLYSELEGY -> (CHARMGRUBBERFLYSELEGY, NOCHARMGRUBBERFLYSELEGY)
+    GRIMMCHILD -> (CHARMGRIMMCHILD, NOCHARMGRIMMCHILD)
     WHITEFRAGMENT -> (CHARMWHITEFRAGMENT, NOCHARMWHITEFRAGMENT)
     _ -> error $ "charmVariables: unsupported charm: " ++ show charm
 
