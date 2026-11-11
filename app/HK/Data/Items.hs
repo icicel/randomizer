@@ -59,29 +59,81 @@ allItems = [
     ,
     itemType STALWARTSHELL CHARMS $ at Sly
     ,
+    itemType BALDURSHELL CHARMS $ at Baldur_Shell
+    ,
+    itemType FURYOFTHEFALLEN CHARMS $ at Fury_of_the_Fallen
+    ,
     itemType QUICKFOCUS CHARMS $ at Salubra
     ,
     itemType LIFEBLOODHEART CHARMS $ at Salubra
+    ,
+    itemType LIFEBLOODCORE CHARMS $ at Lifeblood_Core
+    ,
+    itemType DEFENDERSCREST CHARMS $ at Defender's_Crest
+    ,
+    itemType FLUKENEST CHARMS $ at Flukenest
+    ,
+    itemType THORNSOFAGONY CHARMS $ at Thorns_of_Agony
+    ,
+    itemType MARKOFPRIDE CHARMS $ at Mark_of_Pride
     ,
     itemType STEADYBODY CHARMS $ at Salubra
     ,
     itemType HEAVYBLOW CHARMS $ at Sly_Key
     ,
+    itemType SHARPSHADOW CHARMS $ at Sharp_Shadow
+    ,
+    itemType SPORESHROOM CHARMS $ at Spore_Shroom
+    ,
     itemType LONGNAIL CHARMS $ at Salubra
     ,
     itemType SHAMANSTONE CHARMS $ at Salubra
     ,
-    itemType FRAGILEHEART CHARMS $ at Leg_Eater
+    itemType SOULCATCHER CHARMS $ at Soul_Catcher
     ,
-    itemType FRAGILEGREED CHARMS $ at Leg_Eater
+    itemType SOULEATER CHARMS $ at Soul_Eater
     ,
-    itemType FRAGILESTRENGTH CHARMS $ at Leg_Eater
+    itemType GLOWINGWOMB CHARMS $ at Glowing_Womb
+    ,
+    itemType FRAGILEHEART CHARMS $ atMany [
+        Leg_Eater, Unbreakable_Heart
+    ],
+    itemType FRAGILEGREED CHARMS $ atMany [
+        Leg_Eater, Unbreakable_Greed
+    ],
+    itemType FRAGILESTRENGTH CHARMS $ atMany [
+        Leg_Eater, Unbreakable_Strength
+    ],
+    itemType NAILMASTERSGLORY CHARMS $ at Nailmaster's_Glory
+    ,
+    itemType JONISBLESSING CHARMS $ at Joni's_Blessing
+    ,
+    itemType SHAPEOFUNN CHARMS $ at Shape_of_Unn
+    ,
+    itemType HIVEBLOOD CHARMS $ at Hiveblood
     ,
     itemType DREAMWIELDER CHARMS $ at Seer
     ,
+    itemType DASHMASTER CHARMS $ at Dashmaster
+    ,
+    itemType QUICKSLASH CHARMS $ at Quick_Slash
+    ,
+    itemType SPELLTWISTER CHARMS $ at Spell_Twister
+    ,
+    itemType DEEPFOCUS CHARMS $ at Deep_Focus
+    ,
     itemType GRUBBERFLYSELEGY CHARMS $ at Grubfather
     ,
+    multipartItemType WHITEFRAGMENT CHARMS 2 $ atMany [
+        Queen_Fragment, King_Fragment, Void_Heart
+    ],
     itemType SPRINTMASTER CHARMS $ at Sly_Key
+    ,
+    itemType DREAMSHIELD CHARMS $ at Dreamshield
+    ,
+    itemType WEAVERSONG CHARMS $ at Weaversong
+    ,
+    itemType GRIMMCHILD CHARMS $ at Grimmchild
     ,
 
     item LANTERN $ at Sly

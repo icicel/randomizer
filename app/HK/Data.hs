@@ -577,10 +577,13 @@ data VID =
     -- charms
     | USEDNOTCHES
     | CHARMSPELLTWISTER | NOCHARMSPELLTWISTER
+    | CHARMFRAGILEHEART | NOCHARMFRAGILEHEART
+    | CHARMFRAGILEGREED | NOCHARMFRAGILEGREED
+    | CHARMFRAGILESTRENGTH | NOCHARMFRAGILESTRENGTH
     | CHARMWHITEFRAGMENT | NOCHARMWHITEFRAGMENT
 
-    -- misc
-    | USEDSHADE
+    -- health
+    | SPENTHP | USEDSHADE
     deriving (Show, Enum)
 
 
@@ -665,9 +668,12 @@ sideSlash = leftSlash .| rightSlash
 infection = dreamer
 awoken = dreamNail_3
 
-kingsoul, voidHeart :: Logic
+kingsoul, voidHeart, fragileHeart, fragileGreed, fragileStrength :: Logic
 kingsoul = equippedCharm WHITEFRAGMENT
 voidHeart = equippedCharm WHITEFRAGMENT .& hasAmount 3 WHITEFRAGMENT
+fragileHeart = equippedCharm FRAGILEHEART
+fragileGreed = equippedCharm FRAGILEGREED
+fragileStrength = equippedCharm FRAGILESTRENGTH
 
 
 -- combat macros
@@ -942,6 +948,9 @@ notchCost charm count = case charm of
 charmVariables :: TID -> (VID, VID)
 charmVariables charm = case charm of
     SPELLTWISTER -> (CHARMSPELLTWISTER, NOCHARMSPELLTWISTER)
+    FRAGILEHEART -> (CHARMFRAGILEHEART, NOCHARMFRAGILEHEART)
+    FRAGILEGREED -> (CHARMFRAGILEGREED, NOCHARMFRAGILEGREED)
+    FRAGILESTRENGTH -> (CHARMFRAGILESTRENGTH, NOCHARMFRAGILESTRENGTH)
     WHITEFRAGMENT -> (CHARMWHITEFRAGMENT, NOCHARMWHITEFRAGMENT)
     _ -> error $ "charmVariables: unsupported charm: " ++ show charm
 
@@ -977,18 +986,36 @@ tryEquip charm state inventory = do
         Nothing -- fail on overcharm
 
 
--- shade skip
+-- health/shade state modifiers
+
+takeDamage :: Int -> Logic
+takeDamage damage = stateModifier
+    ("TAKEDAMAGE" ++ if damage == 1 then "" else "[" ++ show damage ++ "]")
+    [MASKSHARDS]
+    (\state inventory -> do
+        let maskShards = lookupItem (term MASKSHARDS) inventory
+        let maxHP = 5 + maskShards `div` 4
+        let spentHP = lookupVar (var SPENTHP) state
+        let newSpentHP = spentHP + damage
+        if newSpentHP >= maxHP then
+            [] -- death
+        else
+            [insertVar (var SPENTHP) newSpentHP state]
+    )
 
 shadeSkip :: Int -> Logic
 shadeSkip hits = shadeSkips .& stateModifier
     ("SHADESKIP" ++ if hits == 1 then "" else "[" ++ show hits ++ "HITS]")
     (if hits == 1 then [] else [MASKSHARDS])
-    (\state _ -> do
+    (\state inventory -> do
+        let maskShards = lookupItem (term MASKSHARDS) inventory
         let voidheartEquipped = lookupVar (var CHARMWHITEFRAGMENT) state == 1
         let maxRequiredSoul = lookupVar (var REQUIREDMAXSOUL) state
-        let requiresMoreThanCap = maxRequiredSoul > (99 - 33)
-        -- todo: health/flower logic
-        if voidheartEquipped || requiresMoreThanCap then
+        let usedShade = lookupVar (var USEDSHADE) state == 1
+        let requiredSoulExceedsCap = maxRequiredSoul > (99 - 33)
+        let shadeHealth = (5 + maskShards `div` 4) `div` 2
+        -- todo: flower logic
+        if voidheartEquipped || usedShade || requiredSoulExceedsCap || shadeHealth < hits then
             []
         else
             [insertVar (var NOCHARMWHITEFRAGMENT) 1 $
