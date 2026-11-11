@@ -575,6 +575,8 @@ data VID =
     SPENTSOUL | SPENTRESERVESOUL | REQUIREDMAXSOUL
 
     -- charms
+    | USEDNOTCHES
+    | CHARMSPELLTWISTER | NOCHARMSPELLTWISTER
     | CHARMWHITEFRAGMENT | NOCHARMWHITEFRAGMENT
 
     -- misc
@@ -851,17 +853,27 @@ castSequence cs = defaultCast { casts = cs }
 castSpell :: Spellcast -> Logic
 castSpell spellcast = stateModifier
     ("CASTSPELL" ++ show spellcast)
-    [VESSELFRAGMENTS]
+    [VESSELFRAGMENTS, SPELLTWISTER, NOTCHES]
     (\state inventory -> do
         let restoreBefore = case before spellcast of NONE -> False; nearbySoul -> nearbySoul >= mode inventory
         let restoreAfter = case after spellcast of NONE -> False; nearbySoul -> nearbySoul >= mode inventory
         let vessels = lookupItem (term VESSELFRAGMENTS) inventory `div` 4
-        let spellCost = 33 :: Int
-        -- todo: spell twister
-        let state' = if restoreBefore then restoreAllSoul state else state
-        case spendSoulSequence state' vessels spellCost (casts spellcast) of
-            Nothing -> []
-            Just state'' -> if restoreAfter then [restoreAllSoul state''] else [state'']
+        let spellTwisterEquipped = lookupVar (var CHARMSPELLTWISTER) state == 1
+        let spellTwisterBlocked = lookupVar (var NOCHARMSPELLTWISTER) state == 1
+        let initialState = if restoreBefore then restoreAllSoul state else state
+        let noSpellTwisterState = insertVar (var NOCHARMSPELLTWISTER) 1 initialState
+        let tryCast st amount = case spendSoulSequence st vessels amount (casts spellcast) of
+                Nothing -> []
+                Just st' -> if restoreAfter then [restoreAllSoul st'] else [st']
+        if spellTwisterEquipped then
+            tryCast initialState 24
+        else if spellTwisterBlocked then
+            tryCast initialState 33
+        else case tryEquip SPELLTWISTER initialState inventory of
+            Nothing -> tryCast noSpellTwisterState 33
+            Just spellTwisterState -> case tryCast spellTwisterState 24 of
+                [] -> [] -- 33-cast is also impossible
+                successfulCast -> successfulCast ++ tryCast noSpellTwisterState 33
     )
 
 spendSoul :: State -> Int -> Int -> Maybe State
@@ -914,8 +926,8 @@ slopeball spellcast = slopeballSkips .& fireball .& castSpell spellcast
 
 -- charm state modifiers
 
-notchCost :: TID -> Int
-notchCost charm = case charm of
+notchCost :: TID -> Int -> Int
+notchCost charm count = case charm of
     WAYWARDCOMPASS -> 1; GATHERINGSWARM -> 1; SPRINTMASTER -> 1; GRUBSONG -> 1; STEADYBODY -> 1
     THORNSOFAGONY -> 1; DEFENDERSCREST -> 1; SPORESHROOM -> 1; NAILMASTERSGLORY -> 1; DREAMWIELDER -> 1
     STALWARTSHELL -> 2; SOULCATCHER -> 2; DASHMASTER -> 2; FRAGILEHEART -> 2; FRAGILEGREED -> 2
@@ -924,28 +936,45 @@ notchCost charm = case charm of
     SHAMANSTONE -> 3; GRUBBERFLYSELEGY -> 3; FRAGILESTRENGTH -> 3; QUICKSLASH -> 3
     MARKOFPRIDE -> 3; FLUKENEST -> 3; QUICKFOCUS -> 3; LIFEBLOODCORE -> 3; DREAMSHIELD -> 3
     SOULEATER -> 4; DEEPFOCUS -> 4; JONISBLESSING -> 4; HIVEBLOOD -> 4
-    WHITEFRAGMENT -> 5
+    WHITEFRAGMENT -> if count >= 3 then 0 else 5 -- voidheart exception
     _ -> error $ "notchCost: not a charm: " ++ show charm
+
+charmVariables :: TID -> (VID, VID)
+charmVariables charm = case charm of
+    SPELLTWISTER -> (CHARMSPELLTWISTER, NOCHARMSPELLTWISTER)
+    WHITEFRAGMENT -> (CHARMWHITEFRAGMENT, NOCHARMWHITEFRAGMENT)
+    _ -> error $ "charmVariables: unsupported charm: " ++ show charm
 
 equippedCharm :: TID -> Logic
 equippedCharm charm = stateModifier
     ("EQUIPPEDCHARM[" ++ show charm ++ "]")
     [charm, NOTCHES]
-    (\state inventory -> do
-        -- todo: more complex logic involving tracking all equipped charms
-        let charmCount = lookupItem (term charm) inventory
-        let notches = lookupItem (term NOTCHES) inventory
-        let hasCharm = if charm == WHITEFRAGMENT
-                then charmCount >= 2
-                else charmCount >= 1
-        let notchesRequired = if charm == WHITEFRAGMENT && charmCount >= 3
-                then 0 -- voidheart
-                else notchCost charm
-        if hasCharm && notches >= notchesRequired then
-            [state]
-        else
-            []
+    (\state inventory -> case tryEquip charm state inventory of
+        Nothing -> []
+        Just newState -> [newState]
     )
+
+tryEquip :: TID -> State -> Inventory -> Maybe State
+tryEquip charm state inventory = do
+    let charmCount = lookupItem (term charm) inventory
+    let notches = lookupItem (term NOTCHES) inventory
+    let (charmVar, antiCharmVar) = charmVariables charm
+    let charmEquipped = lookupVar (var charmVar) state == 1
+    let charmBlocked = lookupVar (var antiCharmVar) state == 1
+    let usedNotches = lookupVar (var USEDNOTCHES) state
+    let hasCharm = if charm == WHITEFRAGMENT then charmCount >= 2 else charmCount >= 1
+    let notchesRequired = notchCost charm charmCount
+    let notchesLeft = notches - usedNotches - notchesRequired -- negative if overcharmed
+    if not hasCharm || charmBlocked then
+        Nothing -- failed equip
+    else if charmEquipped then
+        Just state -- no action needed
+    else if notchesLeft >= 0 then
+        Just $ insertVar (var USEDNOTCHES) (usedNotches + notchesRequired) $
+               insertVar (var charmVar) 1 $
+               state -- equipped state
+    else
+        Nothing -- fail on overcharm
 
 
 -- shade skip
@@ -953,7 +982,7 @@ equippedCharm charm = stateModifier
 shadeSkip :: Int -> Logic
 shadeSkip hits = shadeSkips .& stateModifier
     ("SHADESKIP" ++ if hits == 1 then "" else "[" ++ show hits ++ "HITS]")
-    (if hits == 1 then [SHADESKIPS] else [SHADESKIPS, MASKSHARDS])
+    (if hits == 1 then [] else [MASKSHARDS])
     (\state _ -> do
         let voidheartEquipped = lookupVar (var CHARMWHITEFRAGMENT) state == 1
         let maxRequiredSoul = lookupVar (var REQUIREDMAXSOUL) state
